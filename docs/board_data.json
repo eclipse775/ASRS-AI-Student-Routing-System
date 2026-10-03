@@ -1,0 +1,227 @@
+[
+  {
+    "id": "S1-T01",
+    "sprint": 1,
+    "story": "Foundation",
+    "title": "Set up eight-entity SQLite schema and departments",
+    "owner": "AI/Backend Developer",
+    "status": "Done",
+    "evidence": "app/schema.sql"
+  },
+  {
+    "id": "S1-T02",
+    "sprint": 1,
+    "story": "Foundation",
+    "title": "Implement registration, hashed passwords, session rotation and CSRF",
+    "owner": "AI/Backend Developer",
+    "status": "Done",
+    "evidence": "app/server.py; app/security.py"
+  },
+  {
+    "id": "S1-T03",
+    "sprint": 1,
+    "story": "US1",
+    "title": "Prepare labeled training and separate evaluation data",
+    "owner": "AI/Backend Developer",
+    "status": "Done",
+    "evidence": "data/training.json; data/evaluation.json"
+  },
+  {
+    "id": "S1-T04",
+    "sprint": 1,
+    "story": "US1",
+    "title": "Implement supervised classifier, confidence and safety guards",
+    "owner": "AI/Backend Developer",
+    "status": "Done",
+    "evidence": "app/ml.py"
+  },
+  {
+    "id": "S1-T05",
+    "sprint": 1,
+    "story": "US1",
+    "title": "Implement request CRUD and automatic department routing",
+    "owner": "AI/Backend Developer",
+    "status": "Done",
+    "evidence": "app/service.py"
+  },
+  {
+    "id": "S1-T06",
+    "sprint": 1,
+    "story": "US2",
+    "title": "Persist receipts and notification history with unique event links",
+    "owner": "Frontend Developer",
+    "status": "Done",
+    "evidence": "app/service.py; app/schema.sql"
+  },
+  {
+    "id": "S1-T07",
+    "sprint": 1,
+    "story": "US1-US2",
+    "title": "Build student intake and notification interface",
+    "owner": "Frontend Developer",
+    "status": "Done",
+    "evidence": "static/app.js; static/style.css"
+  },
+  {
+    "id": "S1-T08",
+    "sprint": 1,
+    "story": "US1-US2",
+    "title": "Verify routing, notices, validation and privacy",
+    "owner": "QA Tester",
+    "status": "Done",
+    "evidence": "tests/test_acceptance.py"
+  },
+  {
+    "id": "S1-T09",
+    "sprint": 1,
+    "story": "Management",
+    "title": "Prepare proposal, backlog, architecture and report",
+    "owner": "Product Owner / Scrum Master",
+    "status": "Done",
+    "evidence": "docs/sprint_1/report.md"
+  },
+  {
+    "id": "S2-T01",
+    "sprint": 2,
+    "story": "US3",
+    "title": "Persist admin-adjustable threshold",
+    "owner": "AI/Backend Developer",
+    "status": "Done",
+    "evidence": "app/server.py; app/schema.sql"
+  },
+  {
+    "id": "S2-T02",
+    "sprint": 2,
+    "story": "US3",
+    "title": "Implement four-business-hour review deadline and overdue flag",
+    "owner": "AI/Backend Developer",
+    "status": "Done",
+    "evidence": "app/database.py; app/service.py"
+  },
+  {
+    "id": "S2-T03",
+    "sprint": 2,
+    "story": "US3",
+    "title": "Record staff corrections with original request snapshot",
+    "owner": "AI/Backend Developer",
+    "status": "Done",
+    "evidence": "app/service.py"
+  },
+  {
+    "id": "S2-T04",
+    "sprint": 2,
+    "story": "US4",
+    "title": "Implement support authorization, sorting and queue filters",
+    "owner": "AI/Backend Developer",
+    "status": "Done",
+    "evidence": "app/server.py"
+  },
+  {
+    "id": "S2-T05",
+    "sprint": 2,
+    "story": "US4",
+    "title": "Build direct routing and reassignment UI",
+    "owner": "Frontend Developer / UX Designer",
+    "status": "Done",
+    "evidence": "static/app.js"
+  },
+  {
+    "id": "S2-T06",
+    "sprint": 2,
+    "story": "US5",
+    "title": "Implement state transitions, resolution, history and versions",
+    "owner": "Full-stack Developer",
+    "status": "Done",
+    "evidence": "app/service.py"
+  },
+  {
+    "id": "S2-T07",
+    "sprint": 2,
+    "story": "US5",
+    "title": "Implement student list polling while preserving form inputs",
+    "owner": "Full-stack Developer",
+    "status": "Done",
+    "evidence": "static/app.js"
+  },
+  {
+    "id": "S2-T08",
+    "sprint": 2,
+    "story": "US3-US5",
+    "title": "Verify 500 requests, ownership, rerouting and concurrency",
+    "owner": "QA Tester",
+    "status": "Done",
+    "evidence": "tests/test_acceptance.py"
+  },
+  {
+    "id": "S2-T09",
+    "sprint": 2,
+    "story": "Management",
+    "title": "Prepare criteria audit, sprint report, evidence and delivery ZIP",
+    "owner": "Product Owner / Scrum Master",
+    "status": "Done",
+    "evidence": "docs/criteria_audit.md; docs/sprint_2/report.md"
+  },
+  {
+    "id": "US6",
+    "sprint": 3,
+    "story": "US6",
+    "title": "Priority / Urgent Request Detection",
+    "owner": "AI/Backend Developer",
+    "status": "Backlog",
+    "evidence": "docs/product_backlog.csv"
+  },
+  {
+    "id": "US7",
+    "sprint": 4,
+    "story": "US7",
+    "title": "Multi-language Request Handling",
+    "owner": "AI/Backend Developer & Localization Specialist",
+    "status": "Backlog",
+    "evidence": "docs/product_backlog.csv"
+  },
+  {
+    "id": "US8",
+    "sprint": 5,
+    "story": "US8",
+    "title": "Student Feedback on Resolution",
+    "owner": "Frontend Developer",
+    "status": "Backlog",
+    "evidence": "docs/product_backlog.csv"
+  },
+  {
+    "id": "US9",
+    "sprint": 5,
+    "story": "US9",
+    "title": "Admin Analytics Dashboard",
+    "owner": "Data Analyst & Backend Developer",
+    "status": "Backlog",
+    "evidence": "docs/product_backlog.csv"
+  },
+  {
+    "id": "US10",
+    "sprint": 6,
+    "story": "US10",
+    "title": "AI Model Retraining Pipeline",
+    "owner": "AI/ML Engineer",
+    "status": "Backlog",
+    "evidence": "docs/product_backlog.csv"
+  },
+  {
+    "id": "REVIEW-01",
+    "sprint": 1,
+    "story": "Review",
+    "title": "Record actual team roles, defence date and Product Owner acceptance",
+    "owner": "Team / Product Owner",
+    "status": "Review",
+    "evidence": "Human course action; no completion claimed"
+  },
+  {
+    "id": "REVIEW-02",
+    "sprint": 2,
+    "story": "Review",
+    "title": "Record actual Sprint 2 demo feedback and accepted stories",
+    "owner": "Team / Product Owner",
+    "status": "Review",
+    "evidence": "Human course action; no completion claimed"
+  }
+]

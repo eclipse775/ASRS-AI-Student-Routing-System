@@ -1,0 +1,162 @@
+[
+  {
+    "text": "Campus wifi fails to connect on my laptop and the wireless network keeps dropping.",
+    "label": "it"
+  },
+  {
+    "text": "I cannot sign in to university email after my password expired.",
+    "label": "it"
+  },
+  {
+    "text": "The lab printer has a paper jam and will not print my report.",
+    "label": "it"
+  },
+  {
+    "text": "My portal account is locked and the login password needs resetting.",
+    "label": "it"
+  },
+  {
+    "text": "The VPN software installer reports an error on my computer.",
+    "label": "it"
+  },
+  {
+    "text": "Internet on the campus network is slow and disconnects repeatedly.",
+    "label": "it"
+  },
+  {
+    "text": "A classroom projector has a black screen and a broken display cable.",
+    "label": "it"
+  },
+  {
+    "text": "The university software license cannot be activated on my laptop.",
+    "label": "it"
+  },
+  {
+    "text": "My email mailbox cannot send messages because the server is unavailable.",
+    "label": "it"
+  },
+  {
+    "text": "The computer monitor is broken and the keyboard does not work.",
+    "label": "it"
+  },
+  {
+    "text": "My tuition invoice contains a duplicate fee and I want a refund.",
+    "label": "finance"
+  },
+  {
+    "text": "The scholarship stipend still has not reached my bank account.",
+    "label": "finance"
+  },
+  {
+    "text": "I want to apply for a financial aid grant to cover tuition.",
+    "label": "finance"
+  },
+  {
+    "text": "Can I arrange monthly installments for my tuition payment?",
+    "label": "finance"
+  },
+  {
+    "text": "I paid my bill but need the tuition receipt and invoice.",
+    "label": "finance"
+  },
+  {
+    "text": "The finance office added a late payment penalty to my balance.",
+    "label": "finance"
+  },
+  {
+    "text": "I need to appeal a rejected scholarship application.",
+    "label": "finance"
+  },
+  {
+    "text": "My scholarship payment used the wrong bank transfer details.",
+    "label": "finance"
+  },
+  {
+    "text": "I qualify for a tuition discount and need to request the award.",
+    "label": "finance"
+  },
+  {
+    "text": "Please refund the overpayment on my university tuition bill.",
+    "label": "finance"
+  },
+  {
+    "text": "My course registration was denied because a prerequisite is missing.",
+    "label": "academic"
+  },
+  {
+    "text": "I need an official transcript with my course grades and credits.",
+    "label": "academic"
+  },
+  {
+    "text": "An advisor needs to help me choose my major and degree plan.",
+    "label": "academic"
+  },
+  {
+    "text": "Two lectures conflict in my timetable and I must change classes.",
+    "label": "academic"
+  },
+  {
+    "text": "I want to appeal the grade recorded for my final exam.",
+    "label": "academic"
+  },
+  {
+    "text": "Please confirm how many credits remain before graduation.",
+    "label": "academic"
+  },
+  {
+    "text": "I need permission to enroll in a full elective course.",
+    "label": "academic"
+  },
+  {
+    "text": "How do I transfer previous course credits into my curriculum?",
+    "label": "academic"
+  },
+  {
+    "text": "I want academic advising to discuss probation and my GPA.",
+    "label": "academic"
+  },
+  {
+    "text": "I need to withdraw from a class before the semester deadline.",
+    "label": "academic"
+  },
+  {
+    "text": "I have a fever and cough and want an appointment with a doctor.",
+    "label": "health"
+  },
+  {
+    "text": "I need counseling for anxiety and stress at the health center.",
+    "label": "health"
+  },
+  {
+    "text": "My vaccination certificate needs updating before my medical checkup.",
+    "label": "health"
+  },
+  {
+    "text": "I injured my ankle and need first aid from the campus nurse.",
+    "label": "health"
+  },
+  {
+    "text": "A doctor should check my headache and nausea symptoms.",
+    "label": "health"
+  },
+  {
+    "text": "I want to speak with a psychologist about depression.",
+    "label": "health"
+  },
+  {
+    "text": "I need a medical certificate after being sick last week.",
+    "label": "health"
+  },
+  {
+    "text": "I want to book a clinic appointment for a health examination.",
+    "label": "health"
+  },
+  {
+    "text": "I feel dizzy and need a nurse to check my blood pressure.",
+    "label": "health"
+  },
+  {
+    "text": "I need a doctor consultation about allergy medication.",
+    "label": "health"
+  }
+]

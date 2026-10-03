@@ -1,0 +1,98 @@
+{
+  "status": "passed",
+  "generated_at_utc": "2026-10-03T14:27:37.118Z",
+  "browser": "Chromium 154.0.8037.57",
+  "viewport": "1440x1000 and 390x844",
+  "steps": [
+    {
+      "check": "Student signs in",
+      "status": "passed"
+    },
+    {
+      "check": "Student profile shows the SDU address, admission year and current course",
+      "status": "passed"
+    },
+    {
+      "check": "AI mode is visibly local and does not claim an Gemini connection",
+      "status": "passed"
+    },
+    {
+      "check": "Submit an IT request and see correct department",
+      "status": "passed"
+    },
+    {
+      "check": "Unclear request escalates to staff",
+      "status": "passed"
+    },
+    {
+      "check": "Routing confirmation and notifications appear",
+      "status": "passed"
+    },
+    {
+      "check": "Support signs in and sees pending request",
+      "status": "passed"
+    },
+    {
+      "check": "Route directly from queue using department selector and Route button",
+      "status": "passed"
+    },
+    {
+      "check": "Start work and resolve with a student-visible explanation",
+      "status": "passed"
+    },
+    {
+      "check": "Student sees resolved status and history",
+      "status": "passed"
+    },
+    {
+      "check": "15-second status polling preserves a typed request draft",
+      "status": "passed"
+    },
+    {
+      "check": "Mobile layout has no horizontal overflow",
+      "status": "passed"
+    },
+    {
+      "check": "Administrator adjusts threshold through UI",
+      "status": "passed"
+    },
+    {
+      "check": "500-request staff queue renders within three seconds",
+      "status": "passed"
+    },
+    {
+      "check": "Registration form rejects non-SDU student addresses",
+      "status": "passed"
+    },
+    {
+      "check": "Direct API registration also blocks wrong domains and spoofed suffixes",
+      "status": "passed"
+    },
+    {
+      "check": "Public registration cannot create the helpdesk account",
+      "status": "passed"
+    },
+    {
+      "check": "Registration previews course from admission year",
+      "status": "passed"
+    },
+    {
+      "check": "SDU student can register through the interface and gets a student profile",
+      "status": "passed"
+    },
+    {
+      "check": "Student navigating to staff page returns to own portal",
+      "status": "passed"
+    },
+    {
+      "check": "Offline sprint board supports filtering, owner edits, status changes and export",
+      "status": "passed"
+    }
+  ],
+  "timings": {
+    "status_visible_seconds": 13.358427702,
+    "queue_500_navigation_and_render_seconds": 0.13370680299999732
+  },
+  "console_errors": [],
+  "scope": "Local end-to-end demonstration using synthetic accounts. Timings exclude human response."
+}

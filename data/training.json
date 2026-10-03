@@ -1,0 +1,386 @@
+[
+  {
+    "text": "I cannot connect my laptop to campus wifi and the wireless network is unavailable.",
+    "label": "it"
+  },
+  {
+    "text": "My portal password needs a reset because I cannot login to my account.",
+    "label": "it"
+  },
+  {
+    "text": "The computer lab printer does not print documents and displays a printer error.",
+    "label": "it"
+  },
+  {
+    "text": "The student email account login is blocked and my password does not work.",
+    "label": "it"
+  },
+  {
+    "text": "My laptop has a software installation error when installing the university application.",
+    "label": "it"
+  },
+  {
+    "text": "The campus internet connection is slow and the wifi network disconnects.",
+    "label": "it"
+  },
+  {
+    "text": "I forgot the password for my email account and need a password reset.",
+    "label": "it"
+  },
+  {
+    "text": "The classroom projector screen is black and the display cable is broken.",
+    "label": "it"
+  },
+  {
+    "text": "My computer keeps crashing with a software error during online classes.",
+    "label": "it"
+  },
+  {
+    "text": "The university portal shows a login error and I cannot access the account.",
+    "label": "it"
+  },
+  {
+    "text": "I need technical assistance configuring the VPN connection and network settings.",
+    "label": "it"
+  },
+  {
+    "text": "The computer laboratory keyboard and mouse are broken hardware.",
+    "label": "it"
+  },
+  {
+    "text": "My university email is not sending messages and the mailbox server is unavailable.",
+    "label": "it"
+  },
+  {
+    "text": "The printer in the library has a paper jam and a printing error.",
+    "label": "it"
+  },
+  {
+    "text": "I need software access and a license for the university computer application.",
+    "label": "it"
+  },
+  {
+    "text": "My laptop cannot authenticate on campus wifi and the wireless connection fails.",
+    "label": "it"
+  },
+  {
+    "text": "The online portal account is locked after too many password login attempts.",
+    "label": "it"
+  },
+  {
+    "text": "The classroom computer monitor does not display anything after a hardware failure.",
+    "label": "it"
+  },
+  {
+    "text": "I cannot install the VPN software because the installer reports an error.",
+    "label": "it"
+  },
+  {
+    "text": "The university website portal is unavailable and the server is down.",
+    "label": "it"
+  },
+  {
+    "text": "I need help connecting a laptop to the wireless internet network.",
+    "label": "it"
+  },
+  {
+    "text": "Please restore access to my student email mailbox after the password expired.",
+    "label": "it"
+  },
+  {
+    "text": "A technical error prevents me from downloading the licensed software application.",
+    "label": "it"
+  },
+  {
+    "text": "The campus wifi password is rejected and the internet connection cannot connect.",
+    "label": "it"
+  },
+  {
+    "text": "My scholarship payment has not arrived and I need financial aid assistance.",
+    "label": "finance"
+  },
+  {
+    "text": "I need to pay tuition fees and arrange a payment plan for this semester.",
+    "label": "finance"
+  },
+  {
+    "text": "The university invoice shows an incorrect tuition amount on my bill.",
+    "label": "finance"
+  },
+  {
+    "text": "My financial aid grant application was rejected and I want to appeal.",
+    "label": "finance"
+  },
+  {
+    "text": "I need a tuition refund because I paid the fees twice.",
+    "label": "finance"
+  },
+  {
+    "text": "The scholarship stipend payment is delayed and my bank transfer is missing.",
+    "label": "finance"
+  },
+  {
+    "text": "How do I apply for a financial aid scholarship and receive a tuition discount?",
+    "label": "finance"
+  },
+  {
+    "text": "My tuition payment receipt is missing from the billing account.",
+    "label": "finance"
+  },
+  {
+    "text": "I would like to split my tuition fee into monthly installments.",
+    "label": "finance"
+  },
+  {
+    "text": "The finance office charged an extra fee and I need an invoice correction.",
+    "label": "finance"
+  },
+  {
+    "text": "My student grant funding has stopped and I need financial assistance.",
+    "label": "finance"
+  },
+  {
+    "text": "Please explain the outstanding balance on my tuition invoice.",
+    "label": "finance"
+  },
+  {
+    "text": "I want a refund of my duplicate bank payment for university fees.",
+    "label": "finance"
+  },
+  {
+    "text": "My scholarship eligibility depends on family income and I need an application form.",
+    "label": "finance"
+  },
+  {
+    "text": "I need documentation for the tuition discount and financial aid award.",
+    "label": "finance"
+  },
+  {
+    "text": "The tuition bill includes a late payment penalty which I want to dispute.",
+    "label": "finance"
+  },
+  {
+    "text": "When will the grant funds and scholarship stipend reach my bank?",
+    "label": "finance"
+  },
+  {
+    "text": "I cannot afford tuition and want financial aid or a scholarship.",
+    "label": "finance"
+  },
+  {
+    "text": "I need to update bank details for the scholarship payment transfer.",
+    "label": "finance"
+  },
+  {
+    "text": "Please send me an invoice and receipt for the tuition fees I paid.",
+    "label": "finance"
+  },
+  {
+    "text": "My payment plan installments show the wrong outstanding balance.",
+    "label": "finance"
+  },
+  {
+    "text": "How can I claim a refund for a tuition overpayment?",
+    "label": "finance"
+  },
+  {
+    "text": "I want to appeal the financial aid decision about my grant application.",
+    "label": "finance"
+  },
+  {
+    "text": "The scholarship award and stipend amount do not match my payment.",
+    "label": "finance"
+  },
+  {
+    "text": "I need academic advising to choose courses and register for next semester.",
+    "label": "academic"
+  },
+  {
+    "text": "Two lectures overlap on my class timetable and I need a schedule change.",
+    "label": "academic"
+  },
+  {
+    "text": "I want to change my major and discuss the degree curriculum with an advisor.",
+    "label": "academic"
+  },
+  {
+    "text": "I need an official transcript showing my grades and GPA.",
+    "label": "academic"
+  },
+  {
+    "text": "Can an academic advisor check the prerequisite for my course registration?",
+    "label": "academic"
+  },
+  {
+    "text": "I want to withdraw from a course before the semester registration deadline.",
+    "label": "academic"
+  },
+  {
+    "text": "My exam grade is incorrect and I want an academic grade appeal.",
+    "label": "academic"
+  },
+  {
+    "text": "Please confirm the graduation requirements and credits for my degree.",
+    "label": "academic"
+  },
+  {
+    "text": "The course registration list is full and I need permission to enroll.",
+    "label": "academic"
+  },
+  {
+    "text": "I need to transfer credits from another university into my degree.",
+    "label": "academic"
+  },
+  {
+    "text": "My class schedule has a timetable conflict between lectures.",
+    "label": "academic"
+  },
+  {
+    "text": "I want to discuss academic probation and improve my GPA with my advisor.",
+    "label": "academic"
+  },
+  {
+    "text": "How do I enroll in an elective course and check curriculum requirements?",
+    "label": "academic"
+  },
+  {
+    "text": "I need a transcript for my degree and confirmation of completed credits.",
+    "label": "academic"
+  },
+  {
+    "text": "My prerequisite course is missing from the academic registration record.",
+    "label": "academic"
+  },
+  {
+    "text": "I want to drop a class and replace it with another course this semester.",
+    "label": "academic"
+  },
+  {
+    "text": "Please advise me about changing my major and graduation plan.",
+    "label": "academic"
+  },
+  {
+    "text": "I need to reschedule an exam because it conflicts with another exam.",
+    "label": "academic"
+  },
+  {
+    "text": "The registrar must correct my transcript grades and course credits.",
+    "label": "academic"
+  },
+  {
+    "text": "Which courses satisfy the degree curriculum and graduation requirements?",
+    "label": "academic"
+  },
+  {
+    "text": "I need academic counseling about my study plan and next semester classes.",
+    "label": "academic"
+  },
+  {
+    "text": "My course enrollment was denied because a prerequisite is not recorded.",
+    "label": "academic"
+  },
+  {
+    "text": "Can the academic advisor explain the grading policy and GPA calculation?",
+    "label": "academic"
+  },
+  {
+    "text": "I need to arrange a meeting with an advisor about lecture timetable changes.",
+    "label": "academic"
+  },
+  {
+    "text": "I need a medical appointment at the campus clinic because I have a fever.",
+    "label": "health"
+  },
+  {
+    "text": "I feel anxiety and want to speak to a mental health counselor.",
+    "label": "health"
+  },
+  {
+    "text": "My vaccination certificate is missing and I need a medical record.",
+    "label": "health"
+  },
+  {
+    "text": "I have a headache and nausea and would like to see a doctor.",
+    "label": "health"
+  },
+  {
+    "text": "The clinic nurse needs to check my symptoms and prescribe treatment.",
+    "label": "health"
+  },
+  {
+    "text": "I injured my ankle and need first aid at the health center.",
+    "label": "health"
+  },
+  {
+    "text": "I want to book an appointment for counseling about stress and depression.",
+    "label": "health"
+  },
+  {
+    "text": "Please help me obtain a medical certificate after my illness.",
+    "label": "health"
+  },
+  {
+    "text": "I need information about the campus clinic and a doctor appointment.",
+    "label": "health"
+  },
+  {
+    "text": "I have a cough and fever and need a medical consultation.",
+    "label": "health"
+  },
+  {
+    "text": "My mental health is getting worse and I need psychological counseling.",
+    "label": "health"
+  },
+  {
+    "text": "I want to update my vaccination records and health certificate.",
+    "label": "health"
+  },
+  {
+    "text": "I have pain in my stomach and feel sick after lunch.",
+    "label": "health"
+  },
+  {
+    "text": "I need to see the nurse for a medical checkup and blood pressure test.",
+    "label": "health"
+  },
+  {
+    "text": "Can I book a therapy appointment with the campus psychologist?",
+    "label": "health"
+  },
+  {
+    "text": "I need medical treatment for an injury and a doctor consultation.",
+    "label": "health"
+  },
+  {
+    "text": "I am struggling with anxiety and depression and want confidential counseling.",
+    "label": "health"
+  },
+  {
+    "text": "The clinic asked for my vaccination certificate before the health examination.",
+    "label": "health"
+  },
+  {
+    "text": "I have an allergy and want to consult a doctor about medication.",
+    "label": "health"
+  },
+  {
+    "text": "I feel dizzy and nauseous and need a nurse to check my health.",
+    "label": "health"
+  },
+  {
+    "text": "I need a medical appointment to discuss my headache symptoms.",
+    "label": "health"
+  },
+  {
+    "text": "Can the health center provide first aid for an ankle injury?",
+    "label": "health"
+  },
+  {
+    "text": "I want a mental health appointment to discuss stress with a counselor.",
+    "label": "health"
+  },
+  {
+    "text": "My medical certificate and vaccination records need to be updated.",
+    "label": "health"
+  }
+]

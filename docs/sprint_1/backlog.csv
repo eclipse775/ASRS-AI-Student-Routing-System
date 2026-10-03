@@ -1,0 +1,10 @@
+﻿Task ID,Sprint,Story,Task,Owner role,Estimated hours (planning assumption),Technical state,Evidence
+S1-T01,1,Foundation,Set up eight-entity SQLite schema and departments,AI/Backend Developer,4,Done,app/schema.sql
+S1-T02,1,Foundation,"Implement registration, hashed passwords, session rotation and CSRF",AI/Backend Developer,6,Done,app/server.py; app/security.py
+S1-T03,1,US1,Prepare labeled training and separate evaluation data,AI/Backend Developer,4,Done,data/training.json; data/evaluation.json
+S1-T04,1,US1,"Implement supervised classifier, confidence and safety guards",AI/Backend Developer,5,Done,app/ml.py
+S1-T05,1,US1,Implement request CRUD and automatic department routing,AI/Backend Developer,5,Done,app/service.py
+S1-T06,1,US2,Persist receipts and notification history with unique event links,Frontend Developer,4,Done,app/service.py; app/schema.sql
+S1-T07,1,US1-US2,Build student intake and notification interface,Frontend Developer,6,Done,static/app.js; static/style.css
+S1-T08,1,US1-US2,"Verify routing, notices, validation and privacy",QA Tester,4,Done,tests/test_acceptance.py
+S1-T09,1,Management,"Prepare proposal, backlog, architecture and report",Product Owner / Scrum Master,3,Done,docs/sprint_1/report.md

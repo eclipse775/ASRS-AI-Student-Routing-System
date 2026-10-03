@@ -1,0 +1,10 @@
+﻿Task ID,Sprint,Story,Task,Owner role,Estimated hours (planning assumption),Technical state,Evidence
+S2-T01,2,US3,Persist admin-adjustable threshold,AI/Backend Developer,3,Done,app/server.py; app/schema.sql
+S2-T02,2,US3,Implement four-business-hour review deadline and overdue flag,AI/Backend Developer,3,Done,app/database.py; app/service.py
+S2-T03,2,US3,Record staff corrections with original request snapshot,AI/Backend Developer,3,Done,app/service.py
+S2-T04,2,US4,"Implement support authorization, sorting and queue filters",AI/Backend Developer,4,Done,app/server.py
+S2-T05,2,US4,Build direct routing and reassignment UI,Frontend Developer / UX Designer,5,Done,static/app.js
+S2-T06,2,US5,"Implement state transitions, resolution, history and versions",Full-stack Developer,5,Done,app/service.py
+S2-T07,2,US5,Implement student list polling while preserving form inputs,Full-stack Developer,3,Done,static/app.js
+S2-T08,2,US3-US5,"Verify 500 requests, ownership, rerouting and concurrency",QA Tester,5,Done,tests/test_acceptance.py
+S2-T09,2,Management,"Prepare criteria audit, sprint report, evidence and delivery ZIP",Product Owner / Scrum Master,4,Done,docs/criteria_audit.md; docs/sprint_2/report.md

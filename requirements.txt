@@ -1,0 +1,2 @@
+# Runtime dependencies: none. Use Python 3.11 or newer.
+# The application and its acceptance tests use the Python standard library.

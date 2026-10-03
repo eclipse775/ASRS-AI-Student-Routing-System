@@ -1,0 +1,23 @@
+{
+  "status": "passed",
+  "generated_at_utc": "2026-10-03T14:34:08.253158+00:00",
+  "archive_files": 89,
+  "checks": [
+    "ZIP integrity; private .env excluded",
+    "Source hashes and package audit after extraction",
+    "Fresh database creation",
+    "Application starts using Python only",
+    "HTML interface loads",
+    "Student sign-in over HTTP",
+    "Local AI routes a fictional request to IT over HTTP",
+    "SDU-only registration, server rejection and derived course work after extraction",
+    "Provisioned helpdesk signs in and accesses the staff queue",
+    "Gemini missing-key status is truthful",
+    "Gemini without a key saves the request for staff review"
+  ],
+  "environment": "Python 3.12.14; local HTTP; isolated extracted folder",
+  "limitations": [
+    "No live Gemini request: user API key is required.",
+    "Native Windows execution and remote GitHub Actions were not performed."
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "name": "campus-route-sprints-1-2",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Optional browser acceptance checks; application runs with Python only.",
+  "scripts": {
+    "test:browser": "node scripts/browser_checks.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1"
+  }
+}
