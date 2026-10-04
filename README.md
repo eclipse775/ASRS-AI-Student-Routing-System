@@ -1,7 +1,8 @@
 # AI Student Request Routing and Support System <3
 
 A campus support portal. A student submits a request, an AI model suggests the right department (IT, Finance, Academic, Health), and unclear requests go to a staff review queue.
-<img width="1440" height="1000" alt="08_sdu_registration" src="https://github.com/user-attachments/assets/7e45c818-8338-463d-9626-f87c228acde6" />
+<img width="1870" height="1007" alt="image" src="https://github.com/user-attachments/assets/592fe08a-441c-4653-8a8a-0d5cf209d48a" />
+
 
 ## Requirements
 
