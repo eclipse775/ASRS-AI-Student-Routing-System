@@ -75,6 +75,17 @@ CREATE TABLE IF NOT EXISTS settings (
  updated_by INTEGER REFERENCES users(id),
  updated_at TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS urgent_alerts (
+ id INTEGER PRIMARY KEY AUTOINCREMENT,
+ request_id INTEGER NOT NULL REFERENCES requests(id) ON DELETE CASCADE,
+ department_id INTEGER NOT NULL REFERENCES departments(id),
+ kind TEXT NOT NULL CHECK(kind IN ('urgent','escalation')),
+ reason TEXT NOT NULL,
+ created_at TEXT NOT NULL,
+ acknowledged_at TEXT,
+ acknowledged_by INTEGER REFERENCES users(id)
+);
+CREATE INDEX IF NOT EXISTS idx_alerts_open ON urgent_alerts(acknowledged_at, created_at);
 CREATE INDEX IF NOT EXISTS idx_requests_owner ON requests(student_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_requests_queue ON requests(status, department_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_notifications_owner ON notifications(user_id, created_at);

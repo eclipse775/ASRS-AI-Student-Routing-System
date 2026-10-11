@@ -6,7 +6,8 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from app.security import hash_password
 
 DEPARTMENTS = [(1, "it", "IT Helpdesk", 8), (2, "finance", "Financial Aid", 24),
-               (3, "academic", "Academic Advising", 24), (4, "health", "Health Services", 4)]
+               (3, "academic", "Academic Advising", 24), (4, "health", "Health Services", 4),
+               (5, "security", "Campus Security", 1)]
 
 
 def utc_now():

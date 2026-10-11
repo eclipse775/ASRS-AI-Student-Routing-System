@@ -4,7 +4,8 @@
   "private": true,
   "description": "Optional browser acceptance checks; application runs with Python only.",
   "scripts": {
-    "test:browser": "node scripts/browser_checks.mjs"
+    "test:browser": "node scripts/browser_checks.mjs",
+    "test:browser:urgent": "node scripts/browser_urgent_checks.mjs"
   },
   "devDependencies": {
     "playwright": "1.62.1"

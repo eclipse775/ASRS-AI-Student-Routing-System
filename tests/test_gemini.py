@@ -49,7 +49,7 @@ class GeminiProviderTests(unittest.TestCase):
         self.assertNotIn(KEY, request.full_url)
         config = body['generationConfig']
         self.assertEqual(config['responseMimeType'], 'application/json')
-        self.assertEqual(config['responseSchema']['required'], ['department', 'confidence', 'reason'])
+        self.assertEqual(config['responseSchema']['required'], ['department', 'confidence', 'reason', 'urgent'])
         self.assertEqual(body['contents'], [{'role': 'user', 'parts': [{'text': text}]}])
         self.assertNotIn(KEY, json.dumps(body))
         self.assertEqual((result['suggested_code'], result['provider_result']), ('it', 'success'))

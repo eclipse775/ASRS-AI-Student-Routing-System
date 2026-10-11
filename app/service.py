@@ -1,6 +1,10 @@
 """Transactional request creation, routing, status, history, and notifications."""
 import json
+from datetime import datetime, timezone
 from app.database import review_deadline, utc_now
+from app.urgency import URGENT_FALLBACK_CODE, detect_urgency, merge_ai_flag
+
+ALERT_OVERDUE_SECONDS = 120  # story: an alert nobody acknowledges within 2 minutes is "deferred"
 
 
 class APIError(Exception):
@@ -66,7 +70,45 @@ def routing_detail(db, department_id):
     return f"Sent to {department['name']}. Estimated initial response: {department['response_hours']} business hours."
 
 
-def routing_decision(db, classification):
+def urgent_department_id(db, classification, urgency, preferred=None):
+    """Department for an emergency: rule/staff choice first, then a confident AI route, else the fallback."""
+    code = preferred or urgency.get("department")
+    if not code:
+        threshold = float(db.execute("SELECT value FROM settings WHERE key='confidence_threshold'").fetchone()[0])
+        suggested = classification.get("suggested_code")
+        confident = (suggested not in (None, "review") and not classification.get("review_required")
+                     and classification.get("confidence", 0) >= threshold)
+        code = suggested if confident else URGENT_FALLBACK_CODE  # never route an emergency on a weak guess
+    row = db.execute("SELECT id FROM departments WHERE code=?", (code,)).fetchone()
+    if not row:
+        raise APIError(503, "The routing department is unavailable. Please try again.")
+    return row[0]
+
+
+def assess_urgency(title, message, classification):
+    return merge_ai_flag(detect_urgency(title, message), classification)
+
+
+def urgent_detail(db, department_id):
+    name = db.execute("SELECT name FROM departments WHERE id=?", (department_id,)).fetchone()[0]
+    return (f"Flagged as urgent and sent immediately to {name}, which has been alerted. "
+            "If you are in immediate danger, contact emergency services directly.")
+
+
+def raise_alert(db, request_id, department_id, kind, reason):
+    db.execute("INSERT INTO urgent_alerts (request_id,department_id,kind,reason,created_at) VALUES (?,?,?,?,?)",
+               (request_id, department_id, kind, reason, utc_now()))
+
+
+def has_open_alert(db, request_id):
+    return db.execute("SELECT 1 FROM urgent_alerts WHERE request_id=? AND acknowledged_at IS NULL",
+                      (request_id,)).fetchone() is not None
+
+
+def routing_decision(db, classification, urgency=None):
+    if urgency and urgency["detected"]:
+        # Emergency bypass: never wait in the staff review queue, whatever the confidence.
+        return urgent_department_id(db, classification, urgency), "Received", None
     threshold = float(db.execute("SELECT value FROM settings WHERE key='confidence_threshold'").fetchone()[0])
     if classification.get("review_required") or classification["confidence"] < threshold:
         return None, "Escalated", review_deadline()
@@ -84,7 +126,11 @@ def create_request(db, user, data, classifier, classification=None):
     if priority not in ("normal", "urgent"):
         raise APIError(400, "Choose a valid priority.")
     result = classification if classification is not None else classifier.classify(message)
-    department, status, due = routing_decision(db, result)
+    urgency = assess_urgency(title, message, result)
+    result = {**result, "urgency": urgency}
+    department, status, due = routing_decision(db, result, urgency)
+    if urgency["detected"]:
+        priority = "urgent"
     now = utc_now()
     cursor = db.execute("""INSERT INTO requests
          (student_id,title,message,department_id,suggested_code,confidence,classification_json,
@@ -92,7 +138,11 @@ def create_request(db, user, data, classifier, classification=None):
          (user["id"], title, message, department, result["suggested_code"], result["confidence"],
           json.dumps(result), status, priority, now, now, due))
     row = get_request(db, cursor.lastrowid, user)
-    record_event(db, row, user, "submitted", routing_detail(db, department))
+    if urgency["detected"]:
+        record_event(db, row, user, "submitted", urgent_detail(db, department))
+        raise_alert(db, row["id"], department, "urgent", urgency["reason"])
+    else:
+        record_event(db, row, user, "submitted", routing_detail(db, department))
     return serialize(row)
 
 
@@ -104,13 +154,21 @@ def edit_request(db, user, row, data, classifier, classification=None):
     title = clean_text(data, "title", 3, 120)
     message = clean_text(data, "message", 10, 4000)
     result = classification if classification is not None else classifier.classify(message)
-    department, status, due = routing_decision(db, result)
+    urgency = assess_urgency(title, message, result)
+    result = {**result, "urgency": urgency}
+    department, status, due = routing_decision(db, result, urgency)
+    priority = "urgent" if urgency["detected"] or row["priority"] == "urgent" else "normal"  # never downgrade
     db.execute("""UPDATE requests SET title=?,message=?,department_id=?,suggested_code=?,confidence=?,
-                classification_json=?,status=?,review_due_at=?,updated_at=?,version=version+1 WHERE id=?""",
+                classification_json=?,status=?,priority=?,review_due_at=?,updated_at=?,version=version+1 WHERE id=?""",
                (title, message, department, result["suggested_code"], result["confidence"],
-                json.dumps(result), status, due, utc_now(), row["id"]))
+                json.dumps(result), status, priority, due, utc_now(), row["id"]))
     updated = get_request(db, row["id"], user)
-    record_event(db, updated, user, "edited", "Request edited. " + routing_detail(db, department))
+    if urgency["detected"]:
+        record_event(db, updated, user, "edited", "Request edited. " + urgent_detail(db, department))
+        if not has_open_alert(db, row["id"]):
+            raise_alert(db, row["id"], department, "urgent", urgency["reason"])
+    else:
+        record_event(db, updated, user, "edited", "Request edited. " + routing_detail(db, department))
     return serialize(updated)
 
 
@@ -155,3 +213,72 @@ def update_status(db, user, row, data):
     detail = f"Status changed to {status}." + (f" Resolution: {resolution}" if status == "Resolved" else "")
     record_event(db, updated, user, "status_changed", detail)
     return serialize(updated)
+
+
+def report_missed_emergency(db, user, row, data):
+    """Story constraint: a missed emergency (false negative) is escalated to a human immediately.
+    The owner or support can report it. Idempotent while an alert is still open."""
+    require_role(user, "student", "support")
+    check_version(data, row)
+    if has_open_alert(db, row["id"]):
+        return serialize(row)
+    note = clean_text(data, "note", 0, 500, "").strip()
+    preferred = data.get("department_code") if user["role"] == "support" else None
+    if preferred is not None and (not isinstance(preferred, str) or not db.execute(
+            "SELECT 1 FROM departments WHERE code=?", (preferred,)).fetchone()):
+        raise APIError(400, "Choose a valid department.")
+    classification = json.loads(row["classification_json"])
+    if preferred:
+        department = urgent_department_id(db, classification, {}, preferred)
+    elif row["department_id"] is not None:
+        department = row["department_id"]
+    else:
+        department = urgent_department_id(db, classification, {})
+    reason = f"Missed emergency reported by {user['role']}" + (f": {note}" if note else ".")
+    db.execute("""UPDATE requests SET priority='urgent',department_id=?,
+                status=CASE WHEN status='Escalated' THEN 'Received' ELSE status END,
+                review_due_at=NULL,updated_at=?,version=version+1 WHERE id=?""",
+               (department, utc_now(), row["id"]))
+    updated = get_request(db, row["id"], user)
+    record_event(db, updated, user, "emergency_reported", urgent_detail(db, department))
+    raise_alert(db, row["id"], department, "escalation", reason)
+    return serialize(updated)
+
+
+def _open_alerts(db):
+    rows = db.execute("""SELECT a.id,a.request_id,a.kind,a.reason,a.created_at,d.code department_code,
+                         d.name department_name,r.title,r.status FROM urgent_alerts a
+                         JOIN departments d ON d.id=a.department_id JOIN requests r ON r.id=a.request_id
+                         WHERE a.acknowledged_at IS NULL ORDER BY a.created_at ASC,a.id ASC""").fetchall()
+    now = datetime.now(timezone.utc)
+    alerts = []
+    for r in rows:
+        item = dict(r)
+        age = (now - datetime.fromisoformat(r["created_at"])).total_seconds()
+        item.update(reference=f"REQ-{r['request_id']:05d}", age_seconds=int(age),
+                    overdue=age > ALERT_OVERDUE_SECONDS)
+        alerts.append(item)
+    return alerts
+
+
+def list_alerts(db, user):
+    """Unacknowledged alerts for the staff dashboard (poll every few seconds), oldest first."""
+    require_role(user, "support")
+    return _open_alerts(db)
+
+
+def overdue_alert_summary(db, user):
+    """Supervisor view: alerts nobody acknowledged within the SLA. Administrators may not read request
+    content, so this returns references, department and age only (no title, message or student name)."""
+    require_role(user, "admin")
+    return [{k: a[k] for k in ("id", "reference", "kind", "department_name", "age_seconds")}
+            for a in _open_alerts(db) if a["overdue"]]
+
+
+def acknowledge_alert(db, user, alert_id):
+    require_role(user, "support")
+    cursor = db.execute("UPDATE urgent_alerts SET acknowledged_at=?,acknowledged_by=? WHERE id=? AND acknowledged_at IS NULL",
+                        (utc_now(), user["id"], alert_id))
+    if cursor.rowcount == 0 and not db.execute("SELECT 1 FROM urgent_alerts WHERE id=?", (alert_id,)).fetchone():
+        raise APIError(404, "Alert not found.")
+    return {"acknowledged": True}  # repeating an acknowledgement is harmless

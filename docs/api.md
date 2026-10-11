@@ -17,6 +17,10 @@ All authenticated operations use the `routing_session` cookie. Start with `GET /
 | PUT | /api/requests/{id} | Owner | title, message, version; early edit and reclassification |
 | DELETE | /api/requests/{id} | Owner | version; early deletion and related-data cleanup |
 | GET | /api/staff/requests | Support, Sprint 2 | Filter by status, department, priority, open=1; oldest first |
+| GET | /api/staff/alerts | Support, Sprint 2 | Unacknowledged urgent alerts, oldest first; each has `department_code`, `kind` (urgent/escalation), `reason`, `age_seconds`, `overdue` (>120 s). Poll every 5-10 s |
+| GET | /api/admin/alerts | Admin, Sprint 2 | Supervisor view: alerts unacknowledged for over 120 s. References, department and age only; no request content or student names |
+| POST | /api/staff/alerts/{id}/ack | Support, Sprint 2 | Acknowledge an alert (idempotent) |
+| POST | /api/requests/{id}/emergency | Owner/support | version, optional note, support-only department_code. Reports a missed emergency: sets priority urgent, routes to a department, raises an `escalation` alert |
 | POST | /api/requests/{id}/route | Support, Sprint 2 | department_code, version, optional reason |
 | POST | /api/requests/{id}/status | Support, Sprint 2 | status, version, resolution (required to resolve) |
 | GET | /api/notifications | Student | Own notification history |
@@ -43,3 +47,7 @@ Errors contain `{"error":"Readable explanation"}`. Typical statuses are 400 vali
 ## External routing and failure behavior
 
 Create/edit responses include `classification.provider`, `model_version`, `reason` and `provider_result`. Gemini failure results include a safe `provider_error` category and `review_required: true`. A provider failure still returns HTTP 201 for a saved new request with Escalated status; the request, review deadline and notification persist. Scores/department selections submitted by the client are ignored. Invalid, unauthorized and already-stale edits make no provider call. A later concurrent edit is checked again before commit. Keys and raw provider errors are never returned.
+
+## Urgent request detection (User Story 6)
+
+Every create and edit scans the subject and message with rule-based emergency signals (`app/urgency_rules.json`; English, Russian, Kazakh). The scan runs on the server before and independently of the AI, so a provider outage cannot hide an emergency. A detected emergency sets `priority` to `urgent`, bypasses the staff review queue (status `Received`, no review deadline), routes immediately (rule department, else a confident AI route, else Health Services), and creates an alert for support staff. Details are in `classification.urgency`. When Gemini is the router it also returns a boolean `urgent` (optional for the server; absent means the rules decide alone). The two are merged: a request is urgent if the rules OR the AI say so, and an AI `not urgent` never overrides the rules. Gemini may also route to `security`. A student-selected `urgent` priority stays a label: it sorts above normal requests but does not raise an alert. Priority is never downgraded by an edit. The staff queue lists urgent requests first. `security` (Campus Security) is a department for safety emergencies.

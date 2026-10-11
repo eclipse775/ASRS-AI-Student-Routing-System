@@ -302,10 +302,10 @@ class AcceptanceTests(unittest.TestCase):
         with ThreadPoolExecutor(max_workers=2) as pool:results=list(pool.map(save,[0,1]))
         self.assertEqual(sorted(results),[200,409])
 
-    def test_database_has_eight_related_entities_and_foreign_keys(self):
+    def test_database_has_nine_related_entities_and_foreign_keys(self):
         with connection(self.path) as db:
             names={r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table' AND name!='sqlite_sequence'")}
-            self.assertEqual(len(names),8);self.assertEqual(db.execute("PRAGMA foreign_key_check").fetchall(),[])
+            self.assertEqual(len(names),9);self.assertEqual(db.execute("PRAGMA foreign_key_check").fetchall(),[])
 
     def test_sprint1_disables_sprint2_endpoints(self):
         app=Application(self.path,sprint=1,classifier=Classifier(Path(__file__).parents[1]/"data/training.json"));support=Client(app);support.login("helpdesk@sdu.edu.kz","Support123!")

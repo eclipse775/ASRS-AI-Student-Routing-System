@@ -17,8 +17,9 @@ from app.database import connection, initialize, utc_now
 from app.llm import build_classifier
 from app.security import hash_password, token_hash, verify_password
 from app.university import STUDENT_EMAIL, student_profile, university_info
-from app.service import (APIError, check_version, clean_text, create_request, edit_request,
-                         get_request, require_role, route_request, serialize, update_status)
+from app.service import (APIError, acknowledge_alert, check_version, clean_text, create_request, edit_request,
+                         get_request, list_alerts, overdue_alert_summary, report_missed_emergency,
+                         require_role, route_request, serialize, update_status)
 
 ROOT = Path(__file__).resolve().parents[1]
 LOG = logging.getLogger("routing")
@@ -238,7 +239,7 @@ class Application:
             where, params = [], []
             for key, column, allowed in [("status", "r.status", {"Received", "In Progress", "Resolved", "Escalated"}),
                                          ("priority", "r.priority", {"normal", "urgent"}),
-                                         ("department", "d.code", {"it", "finance", "academic", "health"})]:
+                                         ("department", "d.code", {"it", "finance", "academic", "health", "security"})]:
                 value = query.get(key, [""])[0]
                 if value:
                     if value not in allowed:
@@ -250,9 +251,16 @@ class Application:
             clause = " WHERE " + " AND ".join(where) if where else ""
             rows = db.execute("""SELECT r.*,d.name department_name,d.code department_code,u.name student_name
                                 FROM requests r LEFT JOIN departments d ON d.id=r.department_id
-                                JOIN users u ON u.id=r.student_id""" + clause + " ORDER BY r.created_at ASC,r.id ASC", params).fetchall()
+                                JOIN users u ON u.id=r.student_id""" + clause + " ORDER BY (r.priority='urgent') DESC,r.created_at ASC,r.id ASC", params).fetchall()
             return {"requests": [serialize(r) for r in rows]}, 200
-        match = re.fullmatch(r"/api/requests/(\d+)(?:/(route|status))?", path)
+        if path == "/api/staff/alerts" and method == "GET":
+            self.require_sprint2()
+            return {"alerts": list_alerts(db, user)}, 200
+        match = re.fullmatch(r"/api/staff/alerts/(\d+)/ack", path)
+        if match and method == "POST":
+            self.require_sprint2()
+            return acknowledge_alert(db, user, int(match[1])), 200
+        match = re.fullmatch(r"/api/requests/(\d+)(?:/(route|status|emergency))?", path)
         if match:
             request_id, action = int(match[1]), match[2]
             if user["role"] == "admin":
@@ -272,6 +280,8 @@ class Application:
                     raise APIError(409, "A request can be deleted only before staff starts working on it.")
                 db.execute("DELETE FROM requests WHERE id=?", (request_id,))
                 return {"deleted": True}, 200
+            if method == "POST" and action == "emergency":
+                return {"request": report_missed_emergency(db, user, row, data)}, 200
             if method == "POST" and action in ("route", "status"):
                 self.require_sprint2()
                 updated = route_request(db, user, row, data) if action == "route" else update_status(db, user, row, data)
@@ -287,6 +297,9 @@ class Application:
             if cursor.rowcount == 0:
                 raise APIError(404, "Notification not found.")
             return {"read": True}, 200
+        if path == "/api/admin/alerts" and method == "GET":
+            self.require_sprint2()
+            return {"alerts": overdue_alert_summary(db, user)}, 200
         if path == "/api/admin/settings" and method in ("GET", "PUT"):
             self.require_sprint2()
             require_role(user, "admin")

@@ -1,0 +1,108 @@
+{
+  "threshold": 1.0,
+  "negations": [
+    "not an emergency",
+    "no emergency",
+    "not urgent",
+    "isn't urgent",
+    "is not urgent",
+    "not an urgent",
+    "не срочно",
+    "не экстренн",
+    "не чрезвычайн",
+    "шұғыл емес"
+  ],
+  "signals": [
+    {
+      "id": "chest_pain",
+      "kind": "medical",
+      "weight": 1.0,
+      "department": "health",
+      "pattern": "\\bchest pain\\b|\\bpain in (my )?chest\\b|боль в груди|кеуд\\w* ауыр\\w*"
+    },
+    {
+      "id": "breathing",
+      "kind": "medical",
+      "weight": 1.0,
+      "department": "health",
+      "pattern": "\\b(can'?t|cannot|can not|unable to) breathe\\b|\\bhard to breathe\\b|\\bdifficulty breathing\\b|не могу дышать|трудно дышать|задыхаюсь|тыныс алу\\w* қиын|тыныстай алмай\\w*"
+    },
+    {
+      "id": "unconscious",
+      "kind": "medical",
+      "weight": 1.0,
+      "department": "health",
+      "pattern": "\\bunconscious\\b|\\bpassed out\\b|\\bfainted\\b|\\bnot breathing\\b|без сознания|потерял\\w* сознание|есінен тан\\w*"
+    },
+    {
+      "id": "bleeding",
+      "kind": "medical",
+      "weight": 1.0,
+      "department": "health",
+      "pattern": "\\b(bleeding (heavily|badly)|severe bleeding)\\b|сильное кровотечение|қатты қан кет\\w*"
+    },
+    {
+      "id": "overdose",
+      "kind": "medical",
+      "weight": 1.0,
+      "department": "health",
+      "pattern": "\\boverdos\\w*\\b|\\bpoison\\w*\\b|\\bseizure\\b|\\banaphyla\\w*\\b|\\ballergic reaction\\b|передозировк\\w*|отравлени\\w*"
+    },
+    {
+      "id": "ambulance",
+      "kind": "medical",
+      "weight": 1.0,
+      "department": "health",
+      "pattern": "\\bambulance\\b|скорая помощь|скорую|жедел жәрдем"
+    },
+    {
+      "id": "self_harm",
+      "kind": "medical",
+      "weight": 1.0,
+      "department": "health",
+      "pattern": "\\bsuicid\\w*\\b|\\bkill myself\\b|\\bwant to die\\b|\\bself[- ]harm\\b|суицид\\w*|покончить с собой|хочу умереть|өлгім келеді|өз-өзіме қол жұмса\\w*"
+    },
+    {
+      "id": "fire",
+      "kind": "safety",
+      "weight": 1.0,
+      "department": "security",
+      "pattern": "\\bon fire\\b|\\bfire (in|at)\\b|\\bsmell(s)? (of )?smoke\\b|пожар|\\bгорит\\b|\\bөрт\\b"
+    },
+    {
+      "id": "violence",
+      "kind": "safety",
+      "weight": 1.0,
+      "department": "security",
+      "pattern": "\\b(attacked|assault\\w*|stalk\\w*|armed|weapon|gun)\\b|\\bthreat\\w* to (kill|hurt|harm)\\b|напал\\w*|нападени\\w*|оружи\\w*|угрожа\\w* (убить|расправ\\w*)"
+    },
+    {
+      "id": "emergency_word",
+      "kind": "stated",
+      "weight": 1.0,
+      "department": null,
+      "pattern": "\\bemergency\\b|экстренн\\w*|чрезвычайн\\w*|\\bапат\\w*"
+    },
+    {
+      "id": "urgent_word",
+      "kind": "stated",
+      "weight": 0.5,
+      "department": null,
+      "pattern": "\\burgent(ly)?\\b|\\basap\\b|\\bimmediately\\b|\\bright now\\b|срочно|немедленно|шұғыл"
+    },
+    {
+      "id": "help_cry",
+      "kind": "stated",
+      "weight": 0.6,
+      "department": null,
+      "pattern": "\\b(please )?help me\\b|помогите|көмектесіңдер|көмектесіңіз"
+    },
+    {
+      "id": "danger",
+      "kind": "safety",
+      "weight": 0.5,
+      "department": "security",
+      "pattern": "\\bdangerous\\b|\\bunsafe\\b|\\bscared\\b|\\binjured\\b|\\bsevere pain\\b|опасно|страшно|ранен\\w*"
+    }
+  ]
+}
