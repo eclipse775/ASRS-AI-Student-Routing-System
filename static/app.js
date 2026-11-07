@@ -78,3 +78,70 @@ try{if(state.user.role==="support"){const alerts=(await api("/api/staff/alerts")
 else{state.supervisor=(await api("/api/admin/alerts")).alerts;state.alertError=false;renderAlerts();}}
 catch{state.alertError=true;renderAlerts();}}
 setInterval(pollAlerts,5000);
+
+
+// --- US 10: Retraining Pipeline Logic ---
+
+async function triggerRetrain() {
+    const alertBox = document.getElementById('retrain-status-alert');
+    if (alertBox) {
+        alertBox.innerHTML = `<div class="alert alert-info">Training and evaluating new model... Please wait.</div>`;
+    }
+
+    try {
+        const response = await fetch('/api/admin/retrain', { method: 'POST' });
+        const data = await response.json();
+
+        const alertType = data.deployed ? 'success' : 'warning';
+        if (alertBox) {
+            alertBox.innerHTML = `<div class="alert alert-${alertType}">
+                <strong>${data.message}</strong><br>
+                New Accuracy: ${(data.new_accuracy * 100).toFixed(2)}% | Previous: ${(data.previous_accuracy * 100).toFixed(2)}%
+            </div>`;
+        }
+        loadModelVersions();
+    } catch (err) {
+        if (alertBox) {
+            alertBox.innerHTML = `<div class="alert alert-danger">Failed to run retraining.</div>`;
+        }
+    }
+}
+
+async function loadModelVersions() {
+    const tbody = document.getElementById('model-versions-tbody');
+    if (!tbody) return;
+    try {
+        const response = await fetch('/api/admin/model-versions');
+        const versions = await response.json();
+
+        tbody.innerHTML = versions.map(v => `
+            <tr>
+                <td><code>${v.version_id}</code></td>
+                <td>${(v.accuracy * 100).toFixed(2)}%</td>
+                <td><span class="badge bg-${v.status === 'active' ? 'success' : (v.status === 'rejected' ? 'danger' : 'secondary')}">${v.status}</span></td>
+                <td>${v.trained_at}</td>
+                <td>
+                    ${v.status !== 'active' ? `<button class="btn btn-sm btn-outline-warning" onclick="rollbackModel('${v.version_id}')">Rollback to this</button>` : '<strong>Live</strong>'}
+                </td>
+            </tr>
+        `).join('');
+    } catch (err) {
+        console.error("Error loading model versions:", err);
+    }
+}
+
+async function rollbackModel(versionId) {
+    if (!confirm(`Rollback live AI model to ${versionId}?`)) return;
+    try {
+        const res = await fetch(`/api/admin/rollback/${versionId}`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+            alert("Rollback successful!");
+            loadModelVersions();
+        } else {
+            alert("Rollback failed: " + (data.error || "Unknown error"));
+        }
+    } catch (err) {
+        console.error("Error rolling back model:", err);
+    }
+}

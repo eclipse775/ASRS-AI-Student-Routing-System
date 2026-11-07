@@ -90,3 +90,22 @@ CREATE INDEX IF NOT EXISTS idx_requests_owner ON requests(student_id, created_at
 CREATE INDEX IF NOT EXISTS idx_requests_queue ON requests(status, department_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_notifications_owner ON notifications(user_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_sessions_expiry ON sessions(expires_at);
+
+//us10
+CREATE TABLE IF NOT EXISTS training_data (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ticket_id INTEGER,
+    text TEXT NOT NULL,
+    original_category TEXT,
+    corrected_category TEXT NOT NULL,
+    source TEXT DEFAULT 'staff_correction',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS model_versions (
+    version_id TEXT PRIMARY KEY,
+    accuracy REAL NOT NULL,
+    status TEXT CHECK(status IN ('active', 'archived', 'rejected')) NOT NULL,
+    trained_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    notes TEXT
+);

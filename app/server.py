@@ -333,3 +333,26 @@ class Application:
         if not student_profile(email):
             raise APIError(400, "The admission year cannot be later than the current academic year.")
         return email
+
+
+
+from app.retraining_service import AIRetrainingPipeline
+
+pipeline = AIRetrainingPipeline()
+
+@app.route('/api/admin/retrain', methods=['POST'])
+def trigger_retraining():
+    result = pipeline.run_retraining_workflow()
+    return jsonify(result)
+
+@app.route('/api/admin/model-versions', methods=['GET'])
+def get_model_versions():
+    conn = get_db_connection()
+    rows = conn.execute("SELECT * FROM model_versions ORDER BY trained_at DESC").fetchall()
+    conn.close()
+    return jsonify([dict(r) for r in rows])
+
+@app.route('/api/admin/rollback/<version_id>', methods=['POST'])
+def rollback_model(version_id):
+    res = pipeline.rollback_to_version(version_id)
+    return jsonify(res)
