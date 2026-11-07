@@ -1,4 +1,5 @@
 PRAGMA foreign_keys = ON;
+
 CREATE TABLE IF NOT EXISTS users (
  id INTEGER PRIMARY KEY AUTOINCREMENT,
  name TEXT NOT NULL,
@@ -7,18 +8,21 @@ CREATE TABLE IF NOT EXISTS users (
  role TEXT NOT NULL CHECK(role IN ('student','support','admin')),
  created_at TEXT NOT NULL
 );
+
 CREATE TABLE IF NOT EXISTS departments (
  id INTEGER PRIMARY KEY,
  code TEXT NOT NULL UNIQUE,
  name TEXT NOT NULL,
  response_hours INTEGER NOT NULL CHECK(response_hours > 0)
 );
+
 CREATE TABLE IF NOT EXISTS sessions (
  token_hash TEXT PRIMARY KEY,
  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
  csrf_token TEXT NOT NULL,
  expires_at TEXT NOT NULL
 );
+
 CREATE TABLE IF NOT EXISTS requests (
  id INTEGER PRIMARY KEY AUTOINCREMENT,
  student_id INTEGER NOT NULL REFERENCES users(id),
@@ -38,6 +42,7 @@ CREATE TABLE IF NOT EXISTS requests (
  CHECK((status = 'Escalated' AND department_id IS NULL) OR
        (status != 'Escalated' AND department_id IS NOT NULL))
 );
+
 CREATE TABLE IF NOT EXISTS request_events (
  id INTEGER PRIMARY KEY AUTOINCREMENT,
  request_id INTEGER NOT NULL REFERENCES requests(id) ON DELETE CASCADE,
@@ -49,6 +54,7 @@ CREATE TABLE IF NOT EXISTS request_events (
  created_at TEXT NOT NULL,
  UNIQUE(request_id, version, kind)
 );
+
 CREATE TABLE IF NOT EXISTS notifications (
  id INTEGER PRIMARY KEY AUTOINCREMENT,
  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -58,6 +64,7 @@ CREATE TABLE IF NOT EXISTS notifications (
  read_at TEXT,
  created_at TEXT NOT NULL
 );
+
 CREATE TABLE IF NOT EXISTS routing_corrections (
  id INTEGER PRIMARY KEY AUTOINCREMENT,
  request_id INTEGER NOT NULL REFERENCES requests(id) ON DELETE CASCADE,
@@ -69,12 +76,14 @@ CREATE TABLE IF NOT EXISTS routing_corrections (
  reason TEXT NOT NULL,
  created_at TEXT NOT NULL
 );
+
 CREATE TABLE IF NOT EXISTS settings (
  key TEXT PRIMARY KEY,
  value TEXT NOT NULL,
  updated_by INTEGER REFERENCES users(id),
  updated_at TEXT NOT NULL
 );
+
 CREATE TABLE IF NOT EXISTS urgent_alerts (
  id INTEGER PRIMARY KEY AUTOINCREMENT,
  request_id INTEGER NOT NULL REFERENCES requests(id) ON DELETE CASCADE,
@@ -85,13 +94,14 @@ CREATE TABLE IF NOT EXISTS urgent_alerts (
  acknowledged_at TEXT,
  acknowledged_by INTEGER REFERENCES users(id)
 );
+
 CREATE INDEX IF NOT EXISTS idx_alerts_open ON urgent_alerts(acknowledged_at, created_at);
 CREATE INDEX IF NOT EXISTS idx_requests_owner ON requests(student_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_requests_queue ON requests(status, department_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_notifications_owner ON notifications(user_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_sessions_expiry ON sessions(expires_at);
 
-//us10
+-- US 10: AI Model Retraining Tables
 CREATE TABLE IF NOT EXISTS training_data (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     ticket_id INTEGER,
@@ -108,4 +118,15 @@ CREATE TABLE IF NOT EXISTS model_versions (
     status TEXT CHECK(status IN ('active', 'archived', 'rejected')) NOT NULL,
     trained_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     notes TEXT
+);
+
+-- US 11: Student-Staff Chat / Ticket Comments Table
+CREATE TABLE IF NOT EXISTS ticket_comments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ticket_id INTEGER NOT NULL,
+    sender_role TEXT CHECK(sender_role IN ('student', 'staff', 'system')) NOT NULL,
+    sender_name TEXT NOT NULL,
+    message TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (ticket_id) REFERENCES requests(id) ON DELETE CASCADE
 );

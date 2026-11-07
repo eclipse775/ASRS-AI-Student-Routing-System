@@ -145,3 +145,57 @@ async function rollbackModel(versionId) {
         console.error("Error rolling back model:", err);
     }
 }
+
+// --- US 11: Student-Staff Chat Logic ---
+
+async function loadTicketChat() {
+    const ticketId = document.getElementById('chat-ticket-id').value;
+    const chatBox = document.getElementById('chat-box');
+    if (!ticketId || !chatBox) return;
+
+    try {
+        const response = await fetch(`/api/tickets/${ticketId}/comments`);
+        const comments = await response.json();
+
+        if (comments.length === 0) {
+            chatBox.innerHTML = `<p class="text-muted text-center">No messages yet. Start the conversation!</p>`;
+            return;
+        }
+
+        chatBox.innerHTML = comments.map(c => `
+            <div class="mb-2 p-2 rounded ${c.sender_role === 'staff' ? 'bg-info bg-opacity-10 text-end' : 'bg-white'} border">
+                <strong>${c.sender_name} (${c.sender_role}):</strong>
+                <div>${c.message}</div>
+                <small class="text-muted" style="font-size: 0.75rem;">${c.created_at}</small>
+            </div>
+        `).join('');
+        chatBox.scrollTop = chatBox.scrollHeight;
+    } catch (err) {
+        console.error("Error loading chat:", err);
+    }
+}
+
+async function sendChatMessage() {
+    const ticketId = document.getElementById('chat-ticket-id').value;
+    const role = document.getElementById('chat-sender-role').value;
+    const input = document.getElementById('chat-message-input');
+    const message = input.value.trim();
+
+    if (!ticketId || !message) return;
+
+    try {
+        await fetch(`/api/tickets/${ticketId}/comments`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                sender_role: role,
+                sender_name: role === 'staff' ? 'Support Staff' : 'Student',
+                message: message
+            })
+        });
+        input.value = '';
+        loadTicketChat();
+    } catch (err) {
+        console.error("Error sending message:", err);
+    }
+}

@@ -1,45 +1,71 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Campus Route - Student Support</title>
-  <link rel="icon" href="/logo.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/style.css">
-  <script src="/app.js" defer></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Campus Route - Student Support</title>
+    <link rel="icon" href="/logo.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/style.css">
+    <script src="/app.js" defer></script>
 </head>
 <body>
-  <div id="app"><main class="loading" aria-live="polite">Opening Campus Route...</main></div>
-  <div id="toast" role="status" aria-live="polite" hidden></div>
-  <dialog id="request-dialog" aria-labelledby="dialog-title"></dialog>
+<div id="app"><main class="loading" aria-live="polite">Opening Campus Route...</main></div>
+<div id="toast" role="status" aria-live="polite" hidden></div>
+<dialog id="request-dialog" aria-labelledby="dialog-title"></dialog>
 
+<!-- US 10: AI Model Management & Retraining Pipeline UI -->
+<div id="ai-model-management" class="card p-4 mt-4">
+    <h3>🤖 AI Model Management & Retraining Pipeline (US 10)</h3>
+    <p class="text-muted">Collects staff corrections, validates retrained models against held-out data, and provides 1-click rollback capability.</p>
 
-  <!-- US 10: AI Model Management & Retraining Pipeline UI -->
-  <div id="ai-model-management" class="card p-4 mt-4">
-      <h3>🤖 AI Model Management & Retraining Pipeline (US 10)</h3>
-      <p class="text-muted">Collects staff corrections, validates retrained models against held-out data, and provides 1-click rollback capability.</p>
+    <div class="d-flex gap-2 mb-3">
+        <button id="btn-run-retrain" class="btn btn-primary" onclick="triggerRetrain()">🚀 Run Retraining Workflow</button>
+        <button class="btn btn-outline-secondary" onclick="loadModelVersions()">🔄 Refresh Versions</button>
+    </div>
 
-      <div class="d-flex gap-2 mb-3">
-          <button id="btn-run-retrain" class="btn btn-primary" onclick="triggerRetrain()">🚀 Run Retraining Workflow</button>
-          <button class="btn btn-outline-secondary" onclick="loadModelVersions()">🔄 Refresh Versions</button>
-      </div>
+    <div id="retrain-status-alert"></div>
 
-      <div id="retrain-status-alert"></div>
+    <table class="table table-bordered mt-3">
+        <thead>
+        <tr>
+            <th>Version ID</th>
+            <th>Accuracy</th>
+            <th>Status</th>
+            <th>Trained Date</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+        <tbody id="model-versions-tbody">
+        <!-- Dynamic model versions will be loaded here -->
+        </tbody>
+    </table>
+</div>
 
-      <table class="table table-bordered mt-3">
-          <thead>
-          <tr>
-              <th>Version ID</th>
-              <th>Accuracy</th>
-              <th>Status</th>
-              <th>Trained Date</th>
-              <th>Action</th>
-          </tr>
-          </thead>
-          <tbody id="model-versions-tbody">
-          <!-- Dynamic model versions will be loaded here -->
-          </tbody>
-      </table>
-  </div>
+<!-- US 11: Student-Staff Chat Section -->
+<div id="student-staff-chat" class="card p-4 mt-4">
+    <h3>💬 Ticket Chat & Discussion (US 11)</h3>
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <label class="form-label">Ticket ID:</label>
+            <input type="number" id="chat-ticket-id" class="form-control" value="1" placeholder="Enter Ticket ID">
+        </div>
+        <div class="col-md-4 align-self-end mt-2 mt-md-0">
+            <button class="btn btn-outline-primary" onclick="loadTicketChat()">Open Chat</button>
+        </div>
+    </div>
+
+    <div id="chat-box" class="border rounded p-3 mb-3 bg-light" style="height: 250px; overflow-y: auto;">
+        <p class="text-muted text-center">Select a ticket ID to start chatting...</p>
+    </div>
+
+    <div class="input-group">
+        <select id="chat-sender-role" class="form-select" style="max-width: 130px;">
+            <option value="student">Student</option>
+            <option value="staff">Staff</option>
+        </select>
+        <input type="text" id="chat-message-input" class="form-control" placeholder="Type your message here...">
+        <button class="btn btn-primary" onclick="sendChatMessage()">Send 📤</button>
+    </div>
+</div>
 </body>
 </html>
