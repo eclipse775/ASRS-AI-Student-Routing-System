@@ -10,6 +10,9 @@ DEPARTMENTS = [(1, "it", "IT Helpdesk", 8), (2, "finance", "Financial Aid", 24),
                (5, "security", "Campus Security", 1)]
 
 
+RETRAINING_DEFAULTS = {"retrain_enabled": "1", "retrain_interval_days": "30", "retrain_min_new_samples": "5"}
+
+
 def utc_now():
     return datetime.now(timezone.utc).isoformat(timespec="microseconds")
 
@@ -29,6 +32,14 @@ def initialize(path):
         db.executescript((Path(__file__).parent / "schema.sql").read_text())
         db.executemany("INSERT OR IGNORE INTO departments VALUES (?,?,?,?)", DEPARTMENTS)
         db.execute("INSERT OR IGNORE INTO settings VALUES ('confidence_threshold','0.65',NULL,?)", (utc_now(),))
+        # US10: retraining schedule, adjustable by an administrator without code changes.
+        db.executemany("INSERT OR IGNORE INTO settings VALUES (?,?,NULL,?)",
+                       [(key, value, utc_now()) for key, value in RETRAINING_DEFAULTS.items()])
+        # US10: staff decisions logged before the training table existed become labeled examples.
+        # The UNIQUE correction_id makes this idempotent.
+        db.execute("""INSERT OR IGNORE INTO training_samples (request_id,correction_id,source,label,text,created_at)
+                      SELECT request_id,id,'staff_correction',corrected_code,message_snapshot,created_at
+                      FROM routing_corrections""")
 
 
 def seed_demo(path):

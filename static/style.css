@@ -181,3 +181,23 @@
 @keyframes alertPulse{0%,100%{box-shadow:0 6px 24px #aa353822}50%{box-shadow:0 0 0 5px #aa353855}}
 @media(prefers-reduced-motion:no-preference){.alert-card{animation:alertPulse 1.6s ease-in-out infinite}}
 @media(max-width:800px){.alert-region{padding:12px 20px 0}.alert-card{flex-direction:column;align-items:flex-start}}
+/* ---- US11 messages and US10 model retraining ---- */
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.pill.unread{background:#fff0d7;color:#8b6020}.pill.active{background:#e4f0e8;color:#266449}.pill.archived{background:#eef0ee;color:#677780}.pill.rejected{background:#fbe8e8;color:var(--red)}
+.thread{margin-top:24px;border-top:1px solid var(--line);padding-top:18px}.thread h3{margin-bottom:10px}
+.thread-list{display:flex;flex-direction:column;gap:10px;max-height:280px;overflow-y:auto;padding:4px 2px 8px}
+.msg{max-width:85%;padding:9px 13px;border-radius:12px;background:#f2f4ef;align-self:flex-start}
+.msg.mine{align-self:flex-end;background:var(--green-light)}
+.msg p{margin:4px 0 0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px}
+.msg-meta{display:flex;gap:8px;flex-wrap:wrap;font-size:11px;color:var(--muted)}
+.thread-form{margin-top:12px}.thread-form textarea{min-height:72px}
+.thread-actions{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:8px}
+.thread-closed{padding:10px 12px;background:#f6f7f3;border-radius:8px}
+.stat-value.sm{font-size:16px;letter-spacing:0;overflow-wrap:anywhere;padding-right:48px}
+.section-gap{margin-top:24px}.table-scroll{overflow-x:auto}
+
+/* Fix: checkbox must not inherit the global input width (Retrain automatically label was pushed off to the right). */
+.toggle-field{display:flex;align-items:center;gap:9px}
+.toggle-field input[type=checkbox]{width:auto;flex:none;margin:0}
+#retrain-form .toggle-field{margin-bottom:18px}
+#retrain-form .btn{margin-top:2px}

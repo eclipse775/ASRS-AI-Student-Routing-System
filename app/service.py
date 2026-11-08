@@ -5,6 +5,7 @@ from app.database import review_deadline, utc_now
 from app.urgency import URGENT_FALLBACK_CODE, detect_urgency, merge_ai_flag
 
 ALERT_OVERDUE_SECONDS = 120  # story: an alert nobody acknowledges within 2 minutes is "deferred"
+from app.labels import record_label
 
 
 class APIError(Exception):
@@ -186,10 +187,13 @@ def route_request(db, user, row, data):
     reason = clean_text(data, "reason", 0, 500, "")
     if row["department_id"] == department[0]:
         return serialize(row)  # Refresh/repeated routing does not create another notification.
-    db.execute("""INSERT INTO routing_corrections
+    correction = db.execute("""INSERT INTO routing_corrections
         (request_id,staff_id,original_code,corrected_code,original_confidence,message_snapshot,reason,created_at)
         VALUES (?,?,?,?,?,?,?,?)""", (row["id"], user["id"], row["suggested_code"], code,
          row["confidence"], row["message"], reason, utc_now()))
+    # US10: every staff routing decision is also a labeled example for the next retraining cycle.
+    record_label(db, row["id"], code, row["message"],
+                 "escalation_outcome" if row["status"] == "Escalated" else "staff_correction", correction.lastrowid)
     db.execute("""UPDATE requests SET department_id=?,status='Received',resolution='',review_due_at=NULL,
                 updated_at=?,version=version+1 WHERE id=?""", (department[0], utc_now(), row["id"]))
     updated = get_request(db, row["id"], user)
@@ -207,6 +211,9 @@ def update_status(db, user, row, data):
     if not isinstance(status, str) or status not in transitions[row["status"]]:
         raise APIError(409, "This status transition is unavailable. Route an escalated request first.")
     resolution = clean_text(data, "resolution", 5 if status == "Resolved" else 0, 2000, "")
+    if row["status"] == "Resolved" and status == "In Progress" and row["department_code"]:
+        # US10: a reopened request stays with its department, which is recorded as a (weaker) label.
+        record_label(db, row["id"], row["department_code"], row["message"], "reopened")
     db.execute("UPDATE requests SET status=?,resolution=?,updated_at=?,version=version+1 WHERE id=?",
                (status, resolution, utc_now(), row["id"]))
     updated = get_request(db, row["id"], user)

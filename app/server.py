@@ -15,6 +15,10 @@ from urllib.parse import parse_qs
 
 from app.database import connection, initialize, utc_now
 from app.llm import build_classifier
+from app.messaging import (MESSAGE_COUNT, UNREAD_FOR_STUDENT, UNREAD_FOR_SUPPORT, list_messages, mark_read,
+                           post_message, unread_total_for_support)
+from app.ml import Classifier
+from app.retraining import VERSION_PATTERN, ModelManager
 from app.security import hash_password, token_hash, verify_password
 from app.university import STUDENT_EMAIL, student_profile, university_info
 from app.service import (APIError, acknowledge_alert, check_version, clean_text, create_request, edit_request,
@@ -39,10 +43,37 @@ class Application:
         self.sprint = sprint
         self.secure_cookies = secure_cookies
         initialize(self.database_path)
-        self.classifier = classifier if classifier is not None else build_classifier(ROOT)
+        base = classifier if classifier is not None else build_classifier(ROOT)
+        # US10: the local Naive Bayes model is served through the model registry, so a retrained version
+        # (or a rollback) survives restarts. Gemini is pretrained and is served as-is; the registry still
+        # tracks the local model line, which is used whenever AI mode is local.
+        self.models = ModelManager(self.database_path, getattr(base, "training_path", ROOT / "data" / "training.json"),
+                                   ROOT / "data" / "evaluation.json")
+        self.serving_local = isinstance(base, Classifier)
+        self.classifier = self.models.live if self.serving_local else base
+        self._scheduler_stop = threading.Event()
+        self._scheduler = None
         self.failed_logins = {}
         self.login_lock = threading.Lock()
         self.dummy_hash = hash_password(secrets.token_urlsafe(16))
+
+    def start_scheduler(self, poll_seconds=3600):
+        """US10: check once an hour whether a scheduled retraining cycle is due."""
+        if self._scheduler is not None:
+            return
+
+        def loop():
+            while not self._scheduler_stop.wait(poll_seconds):
+                try:
+                    self.models.run_if_due()
+                except Exception:
+                    LOG.exception("Scheduled retraining check failed")
+
+        self._scheduler = threading.Thread(target=loop, name="retraining-scheduler", daemon=True)
+        self._scheduler.start()
+
+    def stop_scheduler(self):
+        self._scheduler_stop.set()
 
     def __call__(self, environ, start_response):
         headers = [("X-Content-Type-Options", "nosniff"), ("Referrer-Policy", "same-origin"),
@@ -75,6 +106,8 @@ class Application:
                 body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
                 headers.append(("Content-Type", "application/json; charset=utf-8"))
                 db.commit()
+                for callback in environ.pop("routing.after_commit", []):
+                    callback()
             else:
                 if method not in ("GET", "HEAD"):
                     raise APIError(405, "Method not allowed.")
@@ -106,7 +139,7 @@ class Application:
         labels = {200: "OK", 201: "Created", 400: "Bad Request", 401: "Unauthorized",
                   403: "Forbidden", 404: "Not Found", 405: "Method Not Allowed",
                   409: "Conflict", 413: "Payload Too Large", 415: "Unsupported Media Type",
-                  429: "Too Many Requests", 500: "Internal Server Error", 503: "Service Unavailable"}
+                  429: "Too Many Requests", 202: "Accepted", 500: "Internal Server Error", 503: "Service Unavailable"}
         start_response(f"{status} {labels.get(status, 'Error')}", headers)
         return [b"" if environ.get("REQUEST_METHOD") == "HEAD" else body]
 
@@ -125,7 +158,7 @@ class Application:
 
     @staticmethod
     def static_file(path):
-        if path in ("/", "/staff", "/notifications", "/settings"):
+        if path in ("/", "/staff", "/notifications", "/settings", "/models"):
             return ROOT / "static" / "index.html"
         candidate = (ROOT / "static" / path.lstrip("/")).resolve()
         if not candidate.is_relative_to((ROOT / "static").resolve()) or not candidate.is_file():
@@ -176,6 +209,8 @@ class Application:
         message = clean_text(data, "message", 10, 4000)
         if creating and data.get("priority", "normal") not in ("normal", "urgent"):
             raise APIError(400, "Choose a valid priority.")
+        if self.serving_local:
+            self.models.sync(db)  # pick up a model deployed or restored by another process
         return self.classifier.classify(message)
 
     def api(self, db, env, path, method, data, session, user, headers, prepared=None):
@@ -228,8 +263,8 @@ class Application:
             return {"request": create_request(db, user, data, self.classifier, prepared)}, 201
         if path == "/api/requests" and method == "GET":
             require_role(user, "student")
-            rows = db.execute("""SELECT r.*,d.name department_name,d.code department_code FROM requests r
-                          LEFT JOIN departments d ON d.id=r.department_id WHERE r.student_id=?
+            rows = db.execute("SELECT r.*,d.name department_name,d.code department_code," + UNREAD_FOR_STUDENT + "," + MESSAGE_COUNT +
+                          """ FROM requests r LEFT JOIN departments d ON d.id=r.department_id WHERE r.student_id=?
                           ORDER BY r.created_at DESC,r.id DESC""", (user["id"],)).fetchall()
             return {"requests": [serialize(r) for r in rows]}, 200
         if path == "/api/staff/requests" and method == "GET":
@@ -249,10 +284,11 @@ class Application:
             if query.get("open", [""])[0] == "1":
                 where.append("r.status!='Resolved'")
             clause = " WHERE " + " AND ".join(where) if where else ""
-            rows = db.execute("""SELECT r.*,d.name department_name,d.code department_code,u.name student_name
+            rows = db.execute("SELECT r.*,d.name department_name,d.code department_code,u.name student_name," +
+                              UNREAD_FOR_SUPPORT + "," + MESSAGE_COUNT + """
                                 FROM requests r LEFT JOIN departments d ON d.id=r.department_id
                                 JOIN users u ON u.id=r.student_id""" + clause + " ORDER BY (r.priority='urgent') DESC,r.created_at ASC,r.id ASC", params).fetchall()
-            return {"requests": [serialize(r) for r in rows]}, 200
+            return {"requests": [serialize(r) for r in rows], "unread_messages": unread_total_for_support(db)}, 200
         if path == "/api/staff/alerts" and method == "GET":
             self.require_sprint2()
             return {"alerts": list_alerts(db, user)}, 200
@@ -260,6 +296,26 @@ class Application:
         if match and method == "POST":
             self.require_sprint2()
             return acknowledge_alert(db, user, int(match[1])), 200
+        match = re.fullmatch(r"/api/requests/(\d+)/messages(?:/(read))?", path)
+        if match:
+            # US11: only the owner and support staff reach a thread. Another student gets the same 404 as
+            # for a missing request, and administrators never see request content.
+            self.require_sprint2()
+            if user["role"] == "admin":
+                raise APIError(403, "Request content is limited to its owner and support staff.")
+            row = get_request(db, int(match[1]), user)
+            if method == "GET" and not match[2]:
+                query = parse_qs(env.get("QUERY_STRING", ""))
+                after = query.get("after", ["0"])[0]
+                if not after.isdigit() or len(after) > 12:
+                    raise APIError(400, "Invalid message position.")
+                return list_messages(db, user, row, int(after)), 200
+            if method == "POST" and not match[2]:
+                message, created = post_message(db, user, row, data)
+                return {"message": message, "open": True}, 201 if created else 200
+            if method == "POST" and match[2] == "read":
+                return {"read": mark_read(db, user, row)}, 200
+            raise APIError(405, "Method not allowed.")
         match = re.fullmatch(r"/api/requests/(\d+)(?:/(route|status|emergency))?", path)
         if match:
             request_id, action = int(match[1]), match[2]
@@ -269,7 +325,7 @@ class Application:
                 self.require_sprint2()
             row = get_request(db, request_id, user)
             if method == "GET" and not action:
-                events = [dict(r) for r in db.execute("SELECT kind,status,detail,created_at FROM request_events WHERE request_id=? ORDER BY id", (request_id,))]
+                events = [dict(r) for r in db.execute("SELECT kind,status,detail,created_at FROM request_events WHERE request_id=? AND kind NOT LIKE 'message:%' ORDER BY id", (request_id,))]
                 return {"request": serialize(row), "history": events}, 200
             if method == "PUT" and not action:
                 return {"request": edit_request(db, user, row, data, self.classifier, prepared)}, 200
@@ -316,6 +372,30 @@ class Application:
             require_role(user, "admin")
             # No student names or request text in the administrative summary.
             return {"corrections": [dict(r) for r in db.execute("SELECT id,request_id,original_code,corrected_code,original_confidence,reason,created_at FROM routing_corrections ORDER BY id DESC")]}, 200
+        if path.startswith("/api/admin/retraining") or path.startswith("/api/admin/models/"):
+            return self.retraining_api(db, env, path, method, data, user)
+        raise APIError(404, "Endpoint not found.")
+
+    def retraining_api(self, db, env, path, method, data, user):
+        """US10: administrator-only retraining overview, schedule, manual run and version restore."""
+        self.require_sprint2()
+        require_role(user, "admin")
+        if path == "/api/admin/retraining" and method == "GET":
+            return self.models.overview(db, self.classifier.status()["provider"], self.serving_local), 200
+        if path == "/api/admin/retraining/settings" and method == "PUT":
+            return {"settings": self.models.update_settings(db, user, data)}, 200
+        if path == "/api/admin/retraining/run" and method == "POST":
+            self.models.start("manual", user["id"])  # 409 if a run is already in progress
+            return {"started": True}, 202
+        match = re.fullmatch(r"/api/admin/models/([^/]+)/activate", path)
+        if match and method == "POST":
+            if not VERSION_PATTERN.fullmatch(match[1]):
+                raise APIError(404, "Model version not found.")
+            result = self.models.activate(db, match[1], user["id"])
+            if result["changed"]:
+                # Swap the live model only after the registry change is committed.
+                env.setdefault("routing.after_commit", []).append(self.models.sync_from_database)
+            return result, 200
         raise APIError(404, "Endpoint not found.")
 
     @staticmethod

@@ -27,6 +27,13 @@ All authenticated operations use the `routing_session` cookie. Start with `GET /
 | POST | /api/notifications/{id}/read | Owner | Idempotently mark notification read |
 | GET / PUT | /api/admin/settings | Admin, Sprint 2 | Read/set confidence_threshold in [0.50,0.99] |
 | GET | /api/admin/corrections | Admin, Sprint 2 | Correction summaries without student names/message text |
+| GET | /api/requests/{id}/messages?after=N | Owner/support, Sprint 2 | US11: thread in time order; `after` returns only newer messages; `open` is false when Resolved |
+| POST | /api/requests/{id}/messages | Owner/support, Sprint 2 | US11: body (1-1000), optional client_id (retry-safe); 409 when Resolved; student is notified of staff messages |
+| POST | /api/requests/{id}/messages/read | Owner/support, Sprint 2 | US11: mark the other party's messages read |
+| GET | /api/admin/retraining | Admin, Sprint 2 | US10: live version, versions, labeled-data counts, schedule, activity (no request text) |
+| PUT | /api/admin/retraining/settings | Admin, Sprint 2 | US10: enabled, interval_days (1-365), min_new_samples (1-1000) |
+| POST | /api/admin/retraining/run | Admin, Sprint 2 | US10: start a background run (202); 409 if one is running |
+| POST | /api/admin/models/{version}/activate | Admin, Sprint 2 | US10: restore an archived version (rejected versions cannot be restored) |
 
 No CORS permission is configured. The browser frontend calls the API from the same origin. HTML paths are served publicly as a generic shell; user data and role actions are protected at API level. The UI redirects users away from screens outside their role.
 

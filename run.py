@@ -24,6 +24,7 @@ def main():
     parser.add_argument("--sprint", type=int, choices=[1, 2], default=2)
     parser.add_argument("--demo", action="store_true", help="Create demonstration accounts explicitly.")
     parser.add_argument("--secure-cookies", action="store_true", help="Enable only behind HTTPS.")
+    parser.add_argument("--no-scheduler", action="store_true", help="Disable the scheduled model retraining check.")
     parser.add_argument("--ai", choices=["auto", "local", "gemini"], help="Override AI_ROUTER from .env.")
     args = parser.parse_args()
     load_env(Path(__file__).resolve().parent)
@@ -36,6 +37,8 @@ def main():
     except ValueError as error:
         parser.error(str(error))
     app = Application(args.database, sprint=args.sprint, secure_cookies=args.secure_cookies, classifier=classifier)
+    if not args.no_scheduler:
+        app.start_scheduler()
     status = classifier.status()
     print(f"AI mode: {status['provider']} | Model: {status['model']}")
     if status['provider'] == 'gemini' and not status['configured']:

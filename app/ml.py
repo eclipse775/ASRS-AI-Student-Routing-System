@@ -21,7 +21,8 @@ class Classifier:
     provider = "local"
 
     def __init__(self, training_path):
-        raw = Path(training_path).read_bytes()
+        self.training_path = Path(training_path)
+        raw = self.training_path.read_bytes()
         rows = json.loads(raw)
         self.version = "nb-" + hashlib.sha256(raw).hexdigest()[:12]
         self.counts = defaultdict(Counter)

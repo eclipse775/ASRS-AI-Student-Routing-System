@@ -87,6 +87,11 @@ Sign in as the student and submit, for example:
 
 It should be routed to IT. Very short or unclear requests, or any error from the AI provider, go to staff review. The request text is the only thing the AI reads; the subject line is not classified.
 
+## Retraining (US10) and messaging (US11)
+
+- **Admin > Model retraining**: staff routing decisions and reopened requests are collected as labeled data. A retrained model goes live only if it is at least as accurate as the live one on held-out examples; every version is saved and can be restored. CLI: `python scripts/retrain_model.py --status | --run | --due | --rollback VERSION`. The scheduler runs inside `run.py` (use `--no-scheduler` to disable). It retrains the local model; Gemini is pretrained.
+- **Messages**: students and support staff exchange short messages in the request details dialog. Read-only once Resolved.
+
 ## Tests
 
 ```bash
