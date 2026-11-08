@@ -20,7 +20,6 @@ from app.university import STUDENT_EMAIL, student_profile, university_info
 from app.service import (APIError, acknowledge_alert, check_version, clean_text, create_request, edit_request,
                          get_request, list_alerts, overdue_alert_summary, report_missed_emergency,
                          require_role, route_request, serialize, update_status)
-from app.retraining_service import AIRetrainingPipeline
 
 ROOT = Path(__file__).resolve().parents[1]
 LOG = logging.getLogger("routing")
@@ -41,7 +40,6 @@ class Application:
         self.secure_cookies = secure_cookies
         initialize(self.database_path)
         self.classifier = classifier if classifier is not None else build_classifier(ROOT)
-        self.retraining_pipeline = AIRetrainingPipeline()
         self.failed_logins = {}
         self.login_lock = threading.Lock()
         self.dummy_hash = hash_password(secrets.token_urlsafe(16))
@@ -64,9 +62,12 @@ class Application:
                     if environ.get("CONTENT_TYPE", "").split(";")[0].strip() != "application/json":
                         raise APIError(415, "Use application/json.")
                 data = self.read_json(environ) if method not in ("GET", "HEAD") else {}
+                # Authenticate and validate before paying for AI. Never hold SQLite's
+                # write lock while waiting on a network provider.
                 prepared = self.prepare_routing(db, path, method, data, user)
                 if method not in ("GET", "HEAD"):
                     db.execute("BEGIN IMMEDIATE")
+                    # Recheck a session that could have been logged out during AI work.
                     session, user = self.session(db, environ)
                     if not session or not hmac.compare_digest(environ.get("HTTP_X_CSRF_TOKEN", ""), session["csrf_token"]):
                         raise APIError(403, "Your session changed. Refresh the page and try again.")
@@ -218,40 +219,6 @@ class Application:
         if path == "/api/auth/logout" and method == "POST":
             csrf = self.new_session(db, None, headers, session)
             return {"user": None, "csrf_token": csrf}, 200
-
-        # --- US 10: Retraining Pipeline API Endpoints ---
-        if path == "/api/admin/retrain" and method == "POST":
-            require_role(user, "admin")
-            result = self.retraining_pipeline.run_retraining_workflow()
-            return result, 200
-        if path == "/api/admin/model-versions" and method == "GET":
-            require_role(user, "admin")
-            rows = db.execute("SELECT * FROM model_versions ORDER BY trained_at DESC").fetchall()
-            return [dict(r) for r in rows], 200
-        match_rollback = re.fullmatch(r"/api/admin/rollback/([a-zA-Z0-9_\-\.]+)", path)
-        if match_rollback and method == "POST":
-            require_role(user, "admin")
-            version_id = match_rollback[1]
-            res = self.retraining_pipeline.rollback_to_version(version_id)
-            return res, 200
-
-        # --- US 11: Student-Staff Chat API Endpoints ---
-        match_comments = re.fullmatch(r"/api/tickets/(\d+)/comments", path)
-        if match_comments:
-            ticket_id = int(match_comments[1])
-            if method == "GET":
-                rows = db.execute("SELECT * FROM ticket_comments WHERE ticket_id = ? ORDER BY created_at ASC", (ticket_id,)).fetchall()
-                return [dict(r) for r in rows], 200
-            if method == "POST":
-                sender_role = data.get('sender_role', 'student')
-                sender_name = data.get('sender_name', 'User')
-                message = clean_text(data, "message", 1, 4000).strip()
-                if not message:
-                    raise APIError(400, "Message content cannot be empty")
-                db.execute("INSERT INTO ticket_comments (ticket_id, sender_role, sender_name, message) VALUES (?, ?, ?, ?)",
-                           (ticket_id, sender_role, sender_name, message))
-                return {"status": "Comment added successfully"}, 201
-
         require_role(user, "student", "support", "admin")
         if path == "/api/ai/status" and method == "GET":
             return {"ai": self.classifier.status()}, 200
@@ -347,6 +314,7 @@ class Application:
         if path == "/api/admin/corrections" and method == "GET":
             self.require_sprint2()
             require_role(user, "admin")
+            # No student names or request text in the administrative summary.
             return {"corrections": [dict(r) for r in db.execute("SELECT id,request_id,original_code,corrected_code,original_confidence,reason,created_at FROM routing_corrections ORDER BY id DESC")]}, 200
         raise APIError(404, "Endpoint not found.")
 
@@ -365,3 +333,26 @@ class Application:
         if not student_profile(email):
             raise APIError(400, "The admission year cannot be later than the current academic year.")
         return email
+
+
+
+from app.retraining_service import AIRetrainingPipeline
+
+pipeline = AIRetrainingPipeline()
+
+@app.route('/api/admin/retrain', methods=['POST'])
+def trigger_retraining():
+    result = pipeline.run_retraining_workflow()
+    return jsonify(result)
+
+@app.route('/api/admin/model-versions', methods=['GET'])
+def get_model_versions():
+    conn = get_db_connection()
+    rows = conn.execute("SELECT * FROM model_versions ORDER BY trained_at DESC").fetchall()
+    conn.close()
+    return jsonify([dict(r) for r in rows])
+
+@app.route('/api/admin/rollback/<version_id>', methods=['POST'])
+def rollback_model(version_id):
+    res = pipeline.rollback_to_version(version_id)
+    return jsonify(res)
