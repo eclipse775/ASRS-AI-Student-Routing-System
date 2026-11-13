@@ -1,0 +1,9 @@
+.env
+instance/
+__pycache__/
+*.py[cod]
+*.sqlite3
+*.sqlite3-shm
+*.sqlite3-wal
+node_modules/
+.coverage
