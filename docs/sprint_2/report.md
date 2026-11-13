@@ -1,5 +1,7 @@
 # Sprint 2 report
 
+> Historical Sprint 2 snapshot. Its backlog forecast reflects the state at that sprint; the current 16-story implementation map is in `../roadmap.md`.
+
 **Project:** AI Student Request Routing and Support System  
 **Increment:** Human review, staff operations, and student status tracking  
 **Duration:** Two weeks, as required by the lab sheet  

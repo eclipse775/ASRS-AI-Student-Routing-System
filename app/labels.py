@@ -12,5 +12,8 @@ STRONG_SOURCES = ("staff_correction", "escalation_outcome")
 def record_label(db, request_id, label, text, source, correction_id=None):
     if source not in SOURCES:
         raise ValueError("Unknown label source.")
-    db.execute("""INSERT OR IGNORE INTO training_samples (request_id,correction_id,source,label,text,created_at)
-                  VALUES (?,?,?,?,?,?)""", (request_id, correction_id, source, label, text, utc_now()))
+    predicted = db.execute("SELECT suggested_code FROM requests WHERE id=?", (request_id,)).fetchone()
+    db.execute("""INSERT OR IGNORE INTO training_samples
+                  (request_id,correction_id,source,label,text,predicted_code,created_at)
+                  VALUES (?,?,?,?,?,?,?)""",
+               (request_id, correction_id, source, label, text, predicted[0] if predicted else None, utc_now()))

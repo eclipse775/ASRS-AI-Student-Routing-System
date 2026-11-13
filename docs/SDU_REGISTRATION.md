@@ -6,7 +6,7 @@ This requirement was supplied by the project owner on 3 October 2026 and extends
 | --- | --- | --- |
 | University student address | Exactly nine ASCII digits followed by `@sdu.edu.kz` | Server validation and browser input pattern |
 | Admission year | First two digits are interpreted as `2000 + YY` | `app/university.py`, academic-year tests |
-| Current study year | Academic-year start minus admission year plus one | Profile returned by registration/login/session; displayed in student portal |
+| Current study year | Academic-year start minus admission year plus one | Profile returned by registration/login/session; displayed on the student-only **My profile** page |
 | Requested example | `240103030@sdu.edu.kz` -> admission 2024 -> Year 3 in 2026-2027 | Fixed-date unit test and browser profile screenshot |
 | Helpdesk | `helpdesk@sdu.edu.kz`, support role | Provisioned demo account and staff-only queue |
 | Public signup permissions | Always student; cannot create helpdesk/admin or supply their own course/role | Role-forgery and reserved-address tests |

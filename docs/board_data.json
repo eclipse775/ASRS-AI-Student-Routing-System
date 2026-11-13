@@ -167,8 +167,8 @@
     "story": "US6",
     "title": "Priority / Urgent Request Detection",
     "owner": "AI/Backend Developer",
-    "status": "Backlog",
-    "evidence": "docs/product_backlog.csv"
+    "status": "Done",
+    "evidence": "app/urgency.py; app/service.py; static/features.js"
   },
   {
     "id": "US7",
@@ -176,8 +176,8 @@
     "story": "US7",
     "title": "Multi-language Request Handling",
     "owner": "AI/Backend Developer & Localization Specialist",
-    "status": "Backlog",
-    "evidence": "docs/product_backlog.csv"
+    "status": "Done",
+    "evidence": "app/language.py; app/ml.py; app/llm.py; static/features.js"
   },
   {
     "id": "US8",
@@ -185,8 +185,8 @@
     "story": "US8",
     "title": "Student Feedback on Resolution",
     "owner": "Frontend Developer",
-    "status": "Backlog",
-    "evidence": "docs/product_backlog.csv"
+    "status": "Done",
+    "evidence": "app/features.py; static/features.js"
   },
   {
     "id": "US9",
@@ -194,17 +194,17 @@
     "story": "US9",
     "title": "Admin Analytics Dashboard",
     "owner": "Data Analyst & Backend Developer",
-    "status": "Backlog",
-    "evidence": "docs/product_backlog.csv"
+    "status": "Done",
+    "evidence": "app/features.py; static/features.js"
   },
   {
     "id": "US10",
     "sprint": 6,
     "story": "US10",
-    "title": "AI Model Retraining Pipeline",
-    "owner": "AI/ML Engineer",
-    "status": "Backlog",
-    "evidence": "docs/product_backlog.csv"
+    "title": "Student Request Search & Filters",
+    "owner": "Frontend Developer & UX Designer",
+    "status": "Done",
+    "evidence": "static/app.js; static/style.css"
   },
   {
     "id": "REVIEW-01",
@@ -223,5 +223,59 @@
     "owner": "Team / Product Owner",
     "status": "Review",
     "evidence": "Human course action; no completion claimed"
+  },
+  {
+    "id": "US11",
+    "sprint": 6,
+    "story": "US11",
+    "title": "Student–Staff Messaging on a Request",
+    "owner": "Full-stack Developer & UX Designer",
+    "status": "Done",
+    "evidence": "app/messaging.py; static/app.js"
+  },
+  {
+    "id": "US12",
+    "sprint": 6,
+    "story": "US12",
+    "title": "Student Profile Panel",
+    "owner": "Frontend Developer & UX Designer",
+    "status": "Done",
+    "evidence": "static/app.js; static/style.css; app/server.py"
+  },
+  {
+    "id": "US13",
+    "sprint": 7,
+    "story": "US13",
+    "title": "SLA Tracking & Overdue Request Reminders",
+    "owner": "Backend Developer & Frontend Developer",
+    "status": "Done",
+    "evidence": "app/business_time.py; app/scheduler.py; app/features.py; static/features.js"
+  },
+  {
+    "id": "US14",
+    "sprint": 7,
+    "story": "US14",
+    "title": "Request Attachments",
+    "owner": "Full-stack Developer",
+    "status": "Done",
+    "evidence": "app/attachments.py; app/server.py; static/features.js"
+  },
+  {
+    "id": "US15",
+    "sprint": 7,
+    "story": "US15",
+    "title": "Audit Log of Routing & Status Changes",
+    "owner": "Backend Developer & QA Tester",
+    "status": "Done",
+    "evidence": "app/audit.py; app/features.py; app/server.py"
+  },
+  {
+    "id": "US16",
+    "sprint": 7,
+    "story": "US16",
+    "title": "Personal Data Retention & Deletion",
+    "owner": "Backend Developer & QA Tester",
+    "status": "Done",
+    "evidence": "app/privacy.py; app/scheduler.py; app/features.py"
   }
 ]

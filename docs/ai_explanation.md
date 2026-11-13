@@ -1,36 +1,35 @@
 # What the AI does
 
-The project supports two explicit routing providers. **Gemini mode uses a pretrained Gemini 2.5 Flash model through the Gemini API.** Local mode uses the project's supervised multinomial Naive Bayes classifier. Both return a department suggestion, confidence estimate, explanation and model provenance to the same request service. Neither generates a support answer or resolves a request automatically.
+The portal supports a local Naive Bayes classifier and an optional Gemini API route. Both suggest a department and confidence estimate. Neither answers the request or resolves it. Unclear or failed classifications go to the support queue.
 
-## Gemini routing
+## Gemini routing and translation
 
-1. Authenticate the student, verify CSRF and validate the request before making an API call.
-2. Send only the request message to `https://generativelanguage.googleapis.com/v1beta/models/<model>:generateContent`. Student account names, email addresses, passwords and database records are not attached. A student's own message may still contain personal information.
-3. Use server instructions defining IT, finance, academic and health destinations plus `review` for unclear/conflicting cases. Student text is supplied separately as user data.
-4. Request a JSON response schema (`responseMimeType` + `responseSchema`) with three required fields: `department`, `confidence`, `reason`. Validate the returned JSON, department enum, finite score and explanation again on the server.
-5. If a valid department meets the administrative threshold, assign it and persist the model's explanation/version. Otherwise save an escalation with a review deadline and notification.
-6. Timeout, network failure, refusal, incomplete output, bad schema, missing key, access failure or quota limit produce human review with a visible provider error category. There is one outbound call and no automatic retries.
+1. The server authenticates the student and validates the request before making an API call.
+2. It sends only the request message to Gemini. Names, email addresses, passwords, database records, and attachments are not included. A student's message can still contain personal information.
+3. The response schema asks for department, confidence, a short routing reason, language, urgency, and a separate English translation for staff.
+4. The backend validates output fields, department and language codes, score, and translation length before storing the result.
+5. If the request is unclear or Gemini is unavailable, the system saves it for human review. There is one outbound classification request and no retries.
 
-The score is an uncalibrated model estimate. A valid JSON shape does not prove semantic correctness or protect against every prompt attack. Staff review and representative evaluation remain necessary. The prompt supports English/Russian/Kazakh meanings, but live multilingual performance has not been evaluated or accepted as complete US7.
+Gemini supports English, Russian, and Kazakh meaning and can return a staff translation when configured. The original student text is stored separately and never replaced by the translation. The offline local model does not translate arbitrary text; staff see a clear notice when translation is unavailable.
 
-The key is read only by the Python server from the environment or the git-ignored `.env`. The setup script hides key entry. Keys are never returned to the browser or stored in classification records, and provider raw error bodies are not logged or exposed. HTTP redirects are blocked to prevent forwarding Authorization to another origin. The API request uses `store: false`; this option alone does not establish institution-approved privacy or a zero-retention guarantee.
+The confidence score is an uncalibrated model estimate. A valid JSON response does not establish semantic correctness, real-campus accuracy, or institutional approval to send request text to an external provider. Use synthetic text for demonstrations and review the provider's current privacy terms before real use.
 
-Network work occurs before the SQLite write transaction. The service rechecks the session and request version afterwards, so a slow API call does not hold the database write lock or overwrite a staff decision.
+The key is loaded on the server from the process environment or local `.env`. It is not sent to the browser or stored in classification records. Provider error bodies are not logged or exposed. Redirects are blocked to prevent forwarding the API key to another origin. See `API_START_RU.md` for setup.
 
-## Local model
+## Offline classifier
 
-The local classifier learns word/unigram and adjacent-word-pair likelihoods from 96 authored English examples (24 per department), using additive smoothing. Prediction combines token evidence with learned class priors and temperature 1.5. It stores matched terms, a score distribution and a training-data fingerprint. Fewer than two informative terms or Cyrillic text cap confidence at 0.49 and require review.
+The local classifier learns English word and adjacent-word-pair likelihoods from the supplied training data. A small term map adds common Russian and Kazakh support vocabulary to those English features. If the request has too little recognized topic evidence, it is escalated to staff rather than guessed.
 
-The 40-example holdout contains 10 separate authored English examples per department, with no exact training overlap. The recorded 40/40 result applies only to this local model and synthetic dataset. It is not an Gemini accuracy score or a real-campus claim.
+The offline term map covers common topics such as accounts, Wi-Fi, tuition, scholarships, schedules, exams, health services, and physical safety. It is not a full multilingual model. Accuracy parity between languages has not been established; representative validation examples are needed before claiming it.
 
-## Human decisions and training
+## Urgency and staff correction
 
-Support corrections retain original suggestion, selected label, score, message snapshot, reviewer and timestamp. US10 can use authorized labels later. The Gemini model is pretrained externally; this project has not fine-tuned it on the 96 examples or automatically retrained from staff corrections.
+Urgency signals are scanned server-side before and independently of AI routing. This still works if Gemini is unavailable. A detected urgent request bypasses the uncertain-route queue, receives an immediate support-dashboard alert, and can be escalated to configured email contacts if nobody acknowledges it. Students and staff can also report a missed emergency.
+
+Staff routing corrections and reopen decisions are saved as labels for scheduled local-model retraining. A candidate model is checked against held-out data and replaces the live version only if it does not score worse. Model versions can be restored. Gemini remains a pretrained external model and is not retrained on the project's student data.
 
 ## Explain it at the defence
 
-“We send the request text to an Gemini language model through our server. It returns a department, a confidence estimate and a short explanation in a fixed JSON format. Our backend validates that output and uses a configurable threshold. Unclear requests and API failures are saved for human review. The key stays on the server. We also have a local classifier for an offline demonstration.”
+“The system routes requests with a local classifier or an optional Gemini model. Our server checks the result and sends uncertain requests to a human. Russian and Kazakh topic terms are supported offline, while Gemini can provide a separate English translation for staff. Urgent requests bypass the normal review queue and alert support. Staff corrections can improve the local model after validation.”
 
-Use this description for Gemini mode. If the portal displays Local ML, describe the local trained classifier instead. The integration tests use simulated HTTP responses; a live provider response remains pending until a real key is configured and `scripts/check_ai.py` succeeds.
-
-Official implementation references: [Gemini API quickstart](https://ai.google.dev/gemini-api/docs/quickstart), [Structured output](https://ai.google.dev/gemini-api/docs/structured-output).
+Current code has not been acceptance-tested for the new US8-US16 increment. See `testing.md` for the scope of the earlier baseline evidence.

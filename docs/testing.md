@@ -1,6 +1,12 @@
 # Testing and verification
 
-**76 backend tests and 21 browser checks passed.** The suite covers Sprint 1-2 acceptance/security, SDU address/course rules, legacy demo migration, and external Gemini contract, privacy, failure and concurrency. No live or paid Gemini call was made: provider HTTP responses are simulated.
+## Verification status
+
+The archived evidence below records an earlier US1-US11 baseline and predates the current US10 search/filter scope. It does not cover the US8-US16 additions or the revised US12 profile-panel scope in this source version. Those feature paths have not been acceptance-tested in this delivery, so the historical results below must not be treated as verification of the complete 16-story release.
+
+**Current source checks:** Python AST syntax parsed all 22 application/entry modules; `node --check` passed for both frontend scripts and the browser-check script; the sprint board's embedded JavaScript parsed successfully; `app/schema.sql` executed against an empty in-memory SQLite database. These are syntax/schema checks only and do not replace the acceptance checks below. No acceptance suite was run for the current US10 search/filter UI, US11 messaging UI, profile page, support-queue fix, or demo-account name migration.
+
+**Earlier baseline:** 76 backend tests and 21 browser checks passed. That suite covered Sprint 1-2 acceptance/security, SDU address/course rules, legacy demo migration, and the external Gemini contract, privacy, failure and concurrency. No live or paid Gemini call was made; provider HTTP responses were simulated.
 
 | Check | Recorded outcome | Boundary |
 | --- | --- | --- |
@@ -19,6 +25,7 @@
 | Student status visibility | 13.358s | Active polling preserves draft text |
 | Browser flows | 21 checks, no console errors | Local mode explicitly selected |
 | Mobile | 390x844, no horizontal overflow | Student portal including SDU profile inspected |
+| US8-US16 increment | Not run | US10 search/filters, US11 messaging UI, feedback, analytics, profile page, optional email escalation, SLA calendar, attachments, audit, and retention/deletion need current acceptance checks |
 
 Evidence: `evidence/verification.json`, `test_results.txt`, `browser_checks.json`, eight screenshots, package audit and a fresh-extraction smoke check. Native Windows execution and remote GitHub Actions were not performed. The workflow uses actions/checkout@v7 and actions/setup-python@v7, verified against their official repositories; their remote execution is not claimed.
 

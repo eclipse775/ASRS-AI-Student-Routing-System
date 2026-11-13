@@ -5,13 +5,14 @@ import json
 import math
 from pathlib import Path
 import re
+from app.language import detect_language, english_features
 
 STOPWORDS = set("a an the i my me we our you your it is are was were be been to of in on at for with and or but this that have has had can could would should please help need want how what when where why do does did not no get am about from as will out so some any just into cannot after before student request issue problem support university school today yesterday tomorrow".split())
 
 
 def tokenize(text):
     normalized = text.lower().replace("wi-fi", "wifi").replace("wi fi", "wifi")
-    words = re.findall(r"[a-z]+", normalized)
+    words = re.findall(r"[a-z]+", normalized) + english_features(normalized)
     words = [w for w in words if w not in STOPWORDS and len(w) > 1]
     return words + [f"{a}_{b}" for a, b in zip(words, words[1:])]
 
@@ -46,6 +47,7 @@ class Classifier:
                 "training_examples": self.training_size}
 
     def classify(self, text):
+        language = detect_language(text)
         features = Counter(w for w in tokenize(text) if w in self.vocabulary)
         scores = {}
         size = len(self.vocabulary)
@@ -67,10 +69,13 @@ class Classifier:
         if len(matched) < 2:
             confidence = min(confidence, 0.49)
             reason = "Too little known topic evidence. A staff member should review this request."
-        if re.search(r"[\u0400-\u04ff]", text):
+        if language != "en" and len(matched) >= 2:
+            reason = "Language detected. Offline multilingual topic terms support this route; the original text is preserved."
+        elif language != "en":
             confidence = min(confidence, 0.49)
-            reason = "Russian and Kazakh classification is planned for a later sprint. Staff review is required."
+            reason = "Language detected, but this offline model found too little multilingual topic evidence. Staff review is required."
         return {"suggested_code": label, "confidence": round(confidence, 6),
                 "probabilities": {k: round(v, 6) for k, v in probabilities.items()},
                 "matched_terms": matched[:12], "reason": reason,
-                "model_version": self.version, "provider": "local", "provider_result": "local"}
+                "model_version": self.version, "provider": "local", "provider_result": "local",
+                "language": language, "translated_text": text if language == "en" else ""}

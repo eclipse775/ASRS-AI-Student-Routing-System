@@ -6,6 +6,7 @@ student's request, administrators are refused before this module is reached, and
 """
 import re
 
+from app.audit import append_audit
 from app.database import utc_now
 from app.service import APIError, clean_text, record_event, require_role
 
@@ -68,6 +69,7 @@ def post_message(db, user, row, data):
     cursor = db.execute("""INSERT INTO request_messages (request_id,sender_id,sender_role,body,client_id,created_at)
                            VALUES (?,?,?,?,?,?)""", (row["id"], user["id"], user["role"], body, client_id, utc_now()))
     if user["role"] == "support":
+        append_audit(db, user, "staff_message_posted", row["id"], metadata={"message_id": cursor.lastrowid})
         # The student is notified in the existing notification history. The text is not copied into the
         # notice, and the unique event kind keeps one notification per message.
         record_event(db, row, user, f"message:{cursor.lastrowid}",

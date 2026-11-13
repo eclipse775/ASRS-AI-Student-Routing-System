@@ -1,8 +1,9 @@
-"""Read only the project's AI settings from a local, git-ignored .env file."""
+"""Read only the project's approved settings from a local, git-ignored .env file."""
 import os
 from pathlib import Path
 
-ALLOWED = {"AI_ROUTER", "GEMINI_API_KEY", "GEMINI_MODEL", "GEMINI_TIMEOUT_SECONDS"}
+ALLOWED = {"AI_ROUTER", "GEMINI_API_KEY", "GEMINI_MODEL", "GEMINI_TIMEOUT_SECONDS",
+           "SMTP_HOST", "SMTP_PORT", "SMTP_USER", "SMTP_PASSWORD", "SMTP_FROM", "SMTP_STARTTLS"}
 
 
 def load_env(root):

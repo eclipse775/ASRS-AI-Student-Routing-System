@@ -33,5 +33,18 @@
     "file": "Recommended project size.docx.pdf",
     "sha256": "db36a2d691816f8c8443f6966025675dde85ca42132a3d7308c246610fdccda8",
     "copied_unchanged": true
+  },
+  {
+    "file": "AI_Student_Routing_16_User_Stories.xlsx",
+    "sha256": "a0ae3531175b75dec69fc807876ab76bb6fd4ec56b027ed2635e84a92455816e",
+    "copied_unchanged": true,
+    "scope": "current 16-story source"
+  },
+  {
+    "file": "AI_Student_Routing_16_User_Stories_Revised.xlsx",
+    "sha256": "4db00f07e9bf6e50ac7ee4912f416ae26891cb4a38d07b001d1f86682323a892",
+    "copied_unchanged": false,
+    "derived_from": "AI_Student_Routing_16_User_Stories.xlsx",
+    "scope": "revised current 16-story scope; US12 is the student profile panel"
   }
 ]

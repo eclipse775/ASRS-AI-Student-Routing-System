@@ -13,7 +13,12 @@ import threading
 import time
 from urllib.parse import parse_qs
 
+from app.audit import append_audit
+from app.attachments import add_attachments, download_attachment, list_attachments
 from app.database import connection, initialize, utc_now
+from app.features import (analytics, export_audit_csv, get_on_call, get_sla_settings, pending_deletions,
+                          search_audit, submit_feedback, get_feedback, student_reopen,
+                          update_on_call, update_retention, update_sla_settings)
 from app.llm import build_classifier
 from app.messaging import (MESSAGE_COUNT, UNREAD_FOR_STUDENT, UNREAD_FOR_SUPPORT, list_messages, mark_read,
                            post_message, unread_total_for_support)
@@ -24,6 +29,8 @@ from app.university import STUDENT_EMAIL, student_profile, university_info
 from app.service import (APIError, acknowledge_alert, check_version, clean_text, create_request, edit_request,
                          get_request, list_alerts, overdue_alert_summary, report_missed_emergency,
                          require_role, route_request, serialize, update_status)
+from app.privacy import current_deletion_request, decide_deletion, request_deletion
+from app.scheduler import run_scheduled_jobs
 
 ROOT = Path(__file__).resolve().parents[1]
 LOG = logging.getLogger("routing")
@@ -57,17 +64,22 @@ class Application:
         self.login_lock = threading.Lock()
         self.dummy_hash = hash_password(secrets.token_urlsafe(16))
 
-    def start_scheduler(self, poll_seconds=3600):
-        """US10: check once an hour whether a scheduled retraining cycle is due."""
+    def start_scheduler(self, poll_seconds=15):
+        """Run urgent reminders promptly and check retraining on its hourly cadence."""
         if self._scheduler is not None:
             return
 
         def loop():
+            last_model_check = 0.0
             while not self._scheduler_stop.wait(poll_seconds):
-                try:
-                    self.models.run_if_due()
-                except Exception:
-                    LOG.exception("Scheduled retraining check failed")
+                now = time.monotonic()
+                if now - last_model_check >= 3600:
+                    try:
+                        self.models.run_if_due()
+                    except Exception:
+                        LOG.exception("Scheduled retraining check failed")
+                    last_model_check = now
+                run_scheduled_jobs(self.database_path)
 
         self._scheduler = threading.Thread(target=loop, name="retraining-scheduler", daemon=True)
         self._scheduler.start()
@@ -103,8 +115,13 @@ class Application:
                     if not session or not hmac.compare_digest(environ.get("HTTP_X_CSRF_TOKEN", ""), session["csrf_token"]):
                         raise APIError(403, "Your session changed. Refresh the page and try again.")
                 payload, status = self.api(db, environ, path, method, data, session, user, headers, prepared)
-                body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
-                headers.append(("Content-Type", "application/json; charset=utf-8"))
+                if isinstance(payload, dict) and payload.get("_file_response"):
+                    body = payload["body"]
+                    headers.append(("Content-Type", payload["content_type"]))
+                    headers.append(("Content-Disposition", payload["disposition"]))
+                else:
+                    body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+                    headers.append(("Content-Type", "application/json; charset=utf-8"))
                 db.commit()
                 for callback in environ.pop("routing.after_commit", []):
                     callback()
@@ -147,7 +164,7 @@ class Application:
     def read_json(environ):
         try:
             size = int(environ.get("CONTENT_LENGTH") or 0)
-            if not 0 <= size <= 20000:
+            if not 0 <= size <= 21 * 1024 * 1024:
                 raise APIError(413, "The request is too large.")
             data = json.loads(environ["wsgi.input"].read(size) or b"{}")
             if not isinstance(data, dict):
@@ -158,7 +175,7 @@ class Application:
 
     @staticmethod
     def static_file(path):
-        if path in ("/", "/staff", "/notifications", "/settings", "/models"):
+        if path in ("/", "/staff", "/notifications", "/profile", "/settings", "/models", "/analytics", "/operations", "/audit"):
             return ROOT / "static" / "index.html"
         candidate = (ROOT / "static" / path.lstrip("/")).resolve()
         if not candidate.is_relative_to((ROOT / "static").resolve()) or not candidate.is_file():
@@ -174,7 +191,7 @@ class Application:
         except Exception:
             token = ""
         row = db.execute("SELECT * FROM sessions WHERE token_hash=? AND expires_at>?", (token_hash(token), utc_now())).fetchone()
-        user = db.execute("SELECT * FROM users WHERE id=?", (row["user_id"],)).fetchone() if row and row["user_id"] else None
+        user = db.execute("SELECT * FROM users WHERE id=? AND disabled_at IS NULL", (row["user_id"],)).fetchone() if row and row["user_id"] else None
         return row, user
 
     def new_session(self, db, user_id, headers, previous=None):
@@ -192,7 +209,7 @@ class Application:
 
     def require_sprint2(self):
         if self.sprint < 2:
-            raise APIError(403, "This feature is available in the Sprint 2 increment.")
+            raise APIError(403, "This feature is not available in the Sprint 1 demo.")
 
     def prepare_routing(self, db, path, method, data, user):
         creating = path == "/api/requests" and method == "POST"
@@ -243,7 +260,7 @@ class Application:
                     raise APIError(429, "Too many sign-in attempts. Try again in 10 minutes.")
             account = db.execute("SELECT * FROM users WHERE email=?", (email,)).fetchone()
             valid = verify_password(password, account["password_hash"] if account else self.dummy_hash)
-            if not account or not valid or (account["role"] == "student" and not student_profile(email)):
+            if not account or account["disabled_at"] is not None or not valid or (account["role"] == "student" and not student_profile(email)):
                 with self.login_lock:
                     self.failed_logins.setdefault(key, []).append(time.monotonic())
                 raise APIError(401, "Email or password is incorrect.")
@@ -264,6 +281,8 @@ class Application:
         if path == "/api/requests" and method == "GET":
             require_role(user, "student")
             rows = db.execute("SELECT r.*,d.name department_name,d.code department_code," + UNREAD_FOR_STUDENT + "," + MESSAGE_COUNT +
+                          ",(SELECT COUNT(*) FROM request_attachments a WHERE a.request_id=r.id) attachments_count" +
+                          ",(SELECT COUNT(*) FROM request_feedback f WHERE f.request_id=r.id) feedback_count" +
                           """ FROM requests r LEFT JOIN departments d ON d.id=r.department_id WHERE r.student_id=?
                           ORDER BY r.created_at DESC,r.id DESC""", (user["id"],)).fetchall()
             return {"requests": [serialize(r) for r in rows]}, 200
@@ -271,7 +290,8 @@ class Application:
             self.require_sprint2()
             require_role(user, "support")
             query = parse_qs(env.get("QUERY_STRING", ""))
-            where, params = [], []
+            # Retention keeps anonymous metrics but removes archived requests from live work queues.
+            where, params = ["r.anonymized_at IS NULL"], []
             for key, column, allowed in [("status", "r.status", {"Received", "In Progress", "Resolved", "Escalated"}),
                                          ("priority", "r.priority", {"normal", "urgent"}),
                                          ("department", "d.code", {"it", "finance", "academic", "health", "security"})]:
@@ -281,14 +301,29 @@ class Application:
                         raise APIError(400, "Invalid queue filter.")
                     where.append(column + "=?")
                     params.append(value)
+            sla = query.get("sla", [""])[0]
+            if sla:
+                if sla == "overdue":
+                    where.append("r.status='Received' AND r.sla_due_at<=?")
+                    params.append(utc_now())
+                elif sla == "due_soon":
+                    where.append("r.status='Received' AND r.sla_due_at>? AND r.sla_due_at<=?")
+                    params.extend([utc_now(), (datetime.now(timezone.utc) + timedelta(hours=1)).isoformat()])
+                elif sla != "all":
+                    raise APIError(400, "Invalid SLA filter.")
             if query.get("open", [""])[0] == "1":
                 where.append("r.status!='Resolved'")
+            if query.get("mine", [""])[0] == "1":
+                where.append("r.assigned_staff_id=?")
+                params.append(user["id"])
             clause = " WHERE " + " AND ".join(where) if where else ""
-            rows = db.execute("SELECT r.*,d.name department_name,d.code department_code,u.name student_name," +
+            rows = db.execute("SELECT r.*,d.name department_name,d.code department_code,CASE WHEN r.anonymized_at IS NULL THEN u.name ELSE 'Anonymized student' END student_name," +
                               UNREAD_FOR_SUPPORT + "," + MESSAGE_COUNT + """
                                 FROM requests r LEFT JOIN departments d ON d.id=r.department_id
-                                JOIN users u ON u.id=r.student_id""" + clause + " ORDER BY (r.priority='urgent') DESC,r.created_at ASC,r.id ASC", params).fetchall()
-            return {"requests": [serialize(r) for r in rows], "unread_messages": unread_total_for_support(db)}, 200
+                                JOIN users u ON u.id=r.student_id""" + clause + " ORDER BY (r.sla_due_at IS NOT NULL AND r.sla_due_at<=?) DESC,(r.priority='urgent') DESC,r.created_at ASC,r.id ASC", params + [utc_now()]).fetchall()
+            unread_staff = db.execute("SELECT COUNT(*) FROM staff_notifications WHERE user_id=? AND read_at IS NULL", (user["id"],)).fetchone()[0]
+            return {"requests": [serialize(r) for r in rows], "unread_messages": unread_total_for_support(db),
+                    "unread_staff_notifications": unread_staff}, 200
         if path == "/api/staff/alerts" and method == "GET":
             self.require_sprint2()
             return {"alerts": list_alerts(db, user)}, 200
@@ -296,6 +331,48 @@ class Application:
         if match and method == "POST":
             self.require_sprint2()
             return acknowledge_alert(db, user, int(match[1])), 200
+        if path == "/api/staff/notifications" and method == "GET":
+            self.require_sprint2()
+            require_role(user, "support")
+            rows = db.execute("""SELECT n.id,n.request_id,n.kind,n.message,n.created_at,n.read_at,
+                                 'REQ-'||printf('%05d',n.request_id) reference
+                                 FROM staff_notifications n WHERE n.user_id=?
+                                 ORDER BY n.created_at DESC,n.id DESC LIMIT 100""", (user["id"],)).fetchall()
+            return {"notifications": [dict(r) for r in rows]}, 200
+        match = re.fullmatch(r"/api/staff/notifications/(\d+)/read", path)
+        if match and method == "POST":
+            self.require_sprint2()
+            require_role(user, "support")
+            cursor = db.execute("UPDATE staff_notifications SET read_at=COALESCE(read_at,?) WHERE id=? AND user_id=?",
+                                (utc_now(), int(match[1]), user["id"]))
+            if cursor.rowcount == 0:
+                raise APIError(404, "Staff notification not found.")
+            return {"read": True}, 200
+        match = re.fullmatch(r"/api/attachments/(\d+)", path)
+        if match and method == "GET":
+            self.require_sprint2()
+            file_result = download_attachment(db, user, int(match[1]))
+            headers.append(("X-Content-Type-Options", "nosniff"))
+            return file_result, 200
+        match = re.fullmatch(r"/api/requests/(\d+)/(attachments|feedback|reopen)", path)
+        if match:
+            self.require_sprint2()
+            if user["role"] == "admin":
+                raise APIError(403, "Request content is limited to its owner and support staff.")
+            row = get_request(db, int(match[1]), user)
+            kind = match[2]
+            if kind == "attachments" and method == "GET":
+                require_role(user, "student", "support")
+                return {"attachments": list_attachments(db, row)}, 200
+            if kind == "attachments" and method == "POST":
+                return {"attachments": add_attachments(db, user, row, data)}, 201
+            if kind == "feedback" and method == "GET":
+                return {"feedback": get_feedback(db, user, row)}, 200
+            if kind == "feedback" and method == "POST":
+                return {"feedback": submit_feedback(db, user, row, data)}, 201
+            if kind == "reopen" and method == "POST":
+                return student_reopen(db, user, row, data), 200
+            raise APIError(405, "Method not allowed.")
         match = re.fullmatch(r"/api/requests/(\d+)/messages(?:/(read))?", path)
         if match:
             # US11: only the owner and support staff reach a thread. Another student gets the same 404 as
@@ -334,6 +411,9 @@ class Application:
                 check_version(data, row)
                 if row["status"] not in ("Received", "Escalated"):
                     raise APIError(409, "A request can be deleted only before staff starts working on it.")
+                append_audit(db, user, "request_deleted", request_id,
+                             old_value={"department": row["department_code"], "status": row["status"],
+                                        "priority": row["priority"]})
                 db.execute("DELETE FROM requests WHERE id=?", (request_id,))
                 return {"deleted": True}, 200
             if method == "POST" and action == "emergency":
@@ -356,6 +436,46 @@ class Application:
         if path == "/api/admin/alerts" and method == "GET":
             self.require_sprint2()
             return {"alerts": overdue_alert_summary(db, user)}, 200
+        if path == "/api/privacy/deletion" and method in ("GET", "POST"):
+            self.require_sprint2()
+            require_role(user, "student")
+            if method == "GET":
+                return {"deletion_request": current_deletion_request(db, user)}, 200
+            return {"deletion_request": request_deletion(db, user, data)}, 201
+        if path == "/api/admin/analytics" and method == "GET":
+            self.require_sprint2()
+            return analytics(db, user, parse_qs(env.get("QUERY_STRING", ""))), 200
+        if path == "/api/admin/sla" and method in ("GET", "PUT"):
+            self.require_sprint2()
+            if method == "GET":
+                return get_sla_settings(db, user), 200
+            return update_sla_settings(db, user, data), 200
+        if path == "/api/admin/retention" and method in ("GET", "PUT"):
+            self.require_sprint2()
+            require_role(user, "admin")
+            if method == "GET":
+                return {"retention_days": int(db.execute("SELECT value FROM settings WHERE key='retention_days'").fetchone()[0]),
+                        "pending_deletions": pending_deletions(db, user)}, 200
+            return update_retention(db, user, data), 200
+        if path == "/api/admin/on-call" and method in ("GET", "PUT"):
+            self.require_sprint2()
+            if method == "GET":
+                return get_on_call(db, user), 200
+            return update_on_call(db, user, data), 200
+        if path == "/api/admin/deletions" and method == "GET":
+            self.require_sprint2()
+            return {"deletions": pending_deletions(db, user)}, 200
+        match = re.fullmatch(r"/api/admin/deletions/(\d+)/(approve|deny)", path)
+        if match and method == "POST":
+            self.require_sprint2()
+            result = decide_deletion(db, user, int(match[1]), match[2])
+            return result, 200
+        if path == "/api/admin/audit" and method == "GET":
+            self.require_sprint2()
+            return search_audit(db, user, parse_qs(env.get("QUERY_STRING", ""))), 200
+        if path == "/api/admin/audit/export" and method == "GET":
+            self.require_sprint2()
+            return {"csv": export_audit_csv(db, user, parse_qs(env.get("QUERY_STRING", "")))}, 200
         if path == "/api/admin/settings" and method in ("GET", "PUT"):
             self.require_sprint2()
             require_role(user, "admin")
@@ -363,7 +483,10 @@ class Application:
                 threshold = data.get("confidence_threshold")
                 if type(threshold) not in (int, float) or not 0.5 <= threshold <= 0.99:
                     raise APIError(400, "Confidence threshold must be between 0.50 and 0.99.")
+                previous_threshold = db.execute("SELECT value FROM settings WHERE key='confidence_threshold'").fetchone()[0]
                 db.execute("UPDATE settings SET value=?,updated_by=?,updated_at=? WHERE key='confidence_threshold'", (str(threshold), user["id"], utc_now()))
+                append_audit(db, user, "routing_threshold_updated", old_value={"confidence_threshold": previous_threshold},
+                             new_value={"confidence_threshold": threshold})
             return {"confidence_threshold": float(db.execute("SELECT value FROM settings WHERE key='confidence_threshold'").fetchone()[0]),
                     "model_version": self.classifier.version, "training_examples": self.classifier.training_size,
                     "ai": self.classifier.status()}, 200
