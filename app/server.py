@@ -39,7 +39,7 @@ LOG = logging.getLogger("routing")
 def public_user(row):
     if not row:
         return None
-    result = {k: row[k] for k in ("id", "name", "email", "role")}
+    result = {k: row[k] for k in ("id", "name", "email", "role", "created_at")}
     result["student_profile"] = student_profile(row["email"]) if row["role"] == "student" else None
     return result
 

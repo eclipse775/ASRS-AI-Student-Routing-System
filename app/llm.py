@@ -76,11 +76,50 @@ ERRORS = {
     "network": "Gemini could not be reached. A staff member will review the request.",
     "service": "Gemini is temporarily unavailable. A staff member will review the request.",
     "configuration": "The Gemini model configuration needs attention. A staff member will review the request.",
+    "region": "Gemini is not available from this location or project. A staff member will review the request.",
     "invalid_response": "Gemini returned an unusable route. A staff member will review the request.",
     "refusal": "Gemini did not classify this request. A staff member will review the request.",
     "incomplete": "Gemini did not finish classifying this request. A staff member will review the request.",
 }
 BLOCKED_FINISH = {"SAFETY", "PROHIBITED_CONTENT", "BLOCKLIST", "SPII", "RECITATION"}
+
+
+GOOGLE_STATUSES = {"INVALID_ARGUMENT", "FAILED_PRECONDITION", "PERMISSION_DENIED", "NOT_FOUND",
+                   "RESOURCE_EXHAUSTED", "UNAUTHENTICATED", "INTERNAL", "UNAVAILABLE", "DEADLINE_EXCEEDED"}
+GOOGLE_REASONS = {"API_KEY_INVALID", "API_KEY_EXPIRED", "API_KEY_SERVICE_BLOCKED", "API_KEY_HTTP_REFERRER_BLOCKED",
+                  "RATE_LIMIT_EXCEEDED", "RESOURCE_EXHAUSTED", "SERVICE_DISABLED", "CONSUMER_SUSPENDED"}
+
+
+def diagnose_http_error(error):
+    """Return (code, safe_detail) from a Google error. Only whitelisted enum tokens are kept;
+    the raw body, its message text and anything resembling a key are never returned or logged."""
+    status = reason = None
+    try:
+        payload = json.loads(error.read(8192))
+        info = payload.get("error", {}) if isinstance(payload, dict) else {}
+        if info.get("status") in GOOGLE_STATUSES:
+            status = info["status"]
+        for item in info.get("details", []) if isinstance(info.get("details"), list) else []:
+            if isinstance(item, dict) and item.get("reason") in GOOGLE_REASONS:
+                reason = item["reason"]
+                break
+        message = str(info.get("message", "")).lower()
+    except (ValueError, OSError, HTTPException, AttributeError):
+        message = ""
+    http = error.code
+    if (http in (401, 403) or status in ("UNAUTHENTICATED", "PERMISSION_DENIED")
+            or (reason or "").startswith("API_KEY") or "api key" in message):
+        code = "authentication"
+    elif http == 400 and (status == "FAILED_PRECONDITION" or "location is not supported" in message):
+        code = "region"
+    elif http == 429 or status == "RESOURCE_EXHAUSTED":
+        code = "rate_limit"
+    elif http >= 500:
+        code = "service"
+    else:
+        code = "configuration"
+    detail = " ".join(x for x in (f"HTTP {http}", status, reason) if x)
+    return code, detail
 
 
 class ProviderError(Exception):
@@ -107,20 +146,21 @@ class GeminiClassifier:
         self._lock = threading.Lock()
         self._verified = False
         self._last_error = None
+        self._last_detail = None
 
     def status(self):
         with self._lock:
             return {"provider": self.provider, "model": self.model,
                     "configured": bool(self._api_key), "connection_verified": self._verified,
-                    "last_error": self._last_error,
+                    "last_error": self._last_error, "last_error_detail": self._last_detail,
                     "training_examples": None}
 
-    def _review(self, code, language="other"):
+    def _review(self, code, language="other", detail=None):
         with self._lock:
-            self._last_error, self._verified = code, False
+            self._last_error, self._last_detail, self._verified = code, detail, False
         return {"suggested_code": "review", "confidence": 0.0, "reason": ERRORS[code],
                 "model_version": self.version, "provider": self.provider,
-                "provider_result": "unavailable", "provider_error": code,
+                "provider_result": "unavailable", "provider_error": code, "provider_detail": detail,
                 "review_required": True, "matched_terms": [], "probabilities": {},
                 "language": language, "translated_text": ""}
 
@@ -189,7 +229,7 @@ class GeminiClassifier:
                     not re.fullmatch(r"[A-Za-z0-9._-]{2,100}", actual_model)):
                 actual_model = self.model
             with self._lock:
-                self._last_error, self._verified = None, True
+                self._last_error, self._last_detail, self._verified = None, None, True
             outcome = {"suggested_code": code, "confidence": round(float(confidence), 6) if code != "review" else 0.0,
                        "reason": reason, "model_version": "gemini:" + actual_model,
                        "provider": self.provider, "provider_result": "success", "review_required": code == "review",
@@ -199,10 +239,11 @@ class GeminiClassifier:
                 outcome["urgent"] = urgent
             return outcome
         except HTTPError as error:
-            error.close()  # Never read, log or return the provider's raw error body.
-            code = ("authentication" if error.code in (401, 403) else "rate_limit" if error.code == 429
-                    else "service" if error.code >= 500 else "configuration")
-            return self._review(code, request_language)
+            try:
+                code, detail = diagnose_http_error(error)  # whitelisted tokens only, never the raw body
+            finally:
+                error.close()
+            return self._review(code, request_language, detail)
         except (TimeoutError, socket.timeout):
             return self._review("timeout", request_language)
         except URLError as error:

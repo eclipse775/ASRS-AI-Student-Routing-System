@@ -21,4 +21,6 @@ def load_env(root):
         if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
             value = value[1:-1]
         # No evaluation, interpolation, subprocesses or arbitrary environment keys.
-        os.environ.setdefault(name, value)
+        # An existing non-empty variable wins; an empty one (common on Windows) must not hide the .env value.
+        if not os.environ.get(name, "").strip():
+            os.environ[name] = value
