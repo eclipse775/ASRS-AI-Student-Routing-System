@@ -21,7 +21,7 @@ def main():
     report = {'status': 'passed' if passed else 'failed', 'generated_at_utc': datetime.now(timezone.utc).isoformat(),
               'model': result['model_version'], 'department': result['suggested_code'],
               'confidence': result['confidence'], 'reason': result['reason'],
-              'provider_error': result.get('provider_error'), 'scope': 'One live request with fictional text; not an accuracy evaluation.'}
+              'provider_error': result.get('provider_error'), 'provider_detail': result.get('provider_detail'), 'scope': 'One live request with fictional text; not an accuracy evaluation.'}
     print(json.dumps(report, ensure_ascii=False, indent=2))
     if '--save' in sys.argv:
         path = ROOT / 'docs/evidence/live_gemini_check.json'

@@ -8,7 +8,7 @@ function featureEncodeFile(file){return new Promise((resolve,reject)=>{const rea
 function featureSlaPill(r){if(!r.sla_state||["untracked","responded"].includes(r.sla_state))return "";const text=r.sla_state==="overdue"?"Overdue":r.sla_state==="due_soon"?`Due in ${Math.max(1,Math.ceil((r.sla_remaining_seconds||0)/60))} min`:"On track";return `<span class="sla-pill ${r.sla_state}">${text}</span>`;}
 
 const featureBaseNavItems=navItems;
-navItems=function(){const items=featureBaseNavItems();if(state.user?.role==="admin")return [...items,{id:"analytics",icon:"chart",text:"Analytics"},{id:"operations",icon:"sliders",text:"Service operations"},{id:"audit",icon:"list",text:"Audit log"}];if(state.user?.role==="support")return items.map(item=>item.id==="queue"?{...item,count:item.count+(state.featureStaffUnread||0)}:item);return items;};
+navItems=function(){const items=featureBaseNavItems();if(state.user?.role==="admin"){const me=items.filter(i=>i.id==="profile"),rest=items.filter(i=>i.id!=="profile");return [...rest,{id:"analytics",icon:"chart",text:"Analytics"},{id:"operations",icon:"sliders",text:"Service operations"},{id:"audit",icon:"list",text:"Audit log"},...me];}if(state.user?.role==="support")return items.map(item=>item.id==="queue"?{...item,count:item.count+(state.featureStaffUnread||0)}:item);return items;};
 
 const featureBaseRenderView=renderView;
 renderView=function(){const content=document.getElementById("content");if(!content)return;if(state.view==="analytics"){renderFeatureAnalytics(content);return;}if(state.view==="operations"){renderFeatureOperations(content);return;}if(state.view==="audit"){renderFeatureAudit(content);return;}featureBaseRenderView();};

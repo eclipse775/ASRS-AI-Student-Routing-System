@@ -13,7 +13,7 @@ from urllib.error import HTTPError, URLError
 
 from app.config import load_env
 from app.database import connection, seed_demo
-from app.llm import DEFAULT_MODEL, ENDPOINT, INSTRUCTIONS, NoRedirect, GeminiClassifier, build_classifier
+from app.llm import DEFAULT_MODEL, ENDPOINT, INSTRUCTIONS, NoRedirect, GeminiClassifier, build_classifier, diagnose_http_error
 from app.server import Application
 from scripts.configure_gemini import save_config
 from tests.test_acceptance import Client
@@ -49,7 +49,7 @@ class GeminiProviderTests(unittest.TestCase):
         self.assertNotIn(KEY, request.full_url)
         config = body['generationConfig']
         self.assertEqual(config['responseMimeType'], 'application/json')
-        self.assertEqual(config['responseSchema']['required'], ['department', 'confidence', 'reason', 'urgent'])
+        self.assertEqual(config['responseSchema']['required'], ['department', 'confidence', 'reason', 'urgent', 'language', 'translated_text'])
         self.assertEqual(body['contents'], [{'role': 'user', 'parts': [{'text': text}]}])
         self.assertNotIn(KEY, json.dumps(body))
         self.assertEqual((result['suggested_code'], result['provider_result']), ('it', 'success'))
@@ -137,6 +137,28 @@ class GeminiProviderTests(unittest.TestCase):
         self.assertIsNone(NoRedirect().redirect_request(None, None, 302, '', {}, 'https://other.invalid'))
 
 
+class ProviderDiagnosisTests(unittest.TestCase):
+    def _error(self, http, body):
+        return HTTPError(ENDPOINT, http, 'x', {}, io.BytesIO(json.dumps(body).encode()))
+
+    def test_bad_key_reported_as_400_is_authentication_not_model_error(self):
+        err = self._error(400, {"error": {"status": "INVALID_ARGUMENT", "message": "API key not valid.",
+                                          "details": [{"reason": "API_KEY_INVALID"}]}})
+        self.assertEqual(diagnose_http_error(err), ("authentication", "HTTP 400 INVALID_ARGUMENT API_KEY_INVALID"))
+
+    def test_unsupported_location_and_missing_model_are_distinguished(self):
+        region = self._error(400, {"error": {"status": "FAILED_PRECONDITION", "message": "User location is not supported"}})
+        self.assertEqual(diagnose_http_error(region)[0], "region")
+        missing = self._error(404, {"error": {"status": "NOT_FOUND", "message": "models/x is not found"}})
+        self.assertEqual(diagnose_http_error(missing)[0], "configuration")
+
+    def test_detail_never_contains_raw_message_or_key(self):
+        err = self._error(429, {"error": {"status": "RESOURCE_EXHAUSTED", "message": "secret " + KEY}})
+        code, detail = diagnose_http_error(err)
+        self.assertEqual(code, "rate_limit")
+        self.assertNotIn(KEY, detail)
+
+
 class ConfigurationTests(unittest.TestCase):
     def test_environment_mode_selects_external_model_and_can_force_local(self):
         with patch.dict(os.environ, {'AI_ROUTER': 'auto', 'GEMINI_API_KEY': KEY}, clear=True):
@@ -155,6 +177,13 @@ class ConfigurationTests(unittest.TestCase):
             self.assertEqual(os.environ['AI_ROUTER'], 'gemini')
             self.assertNotIn('PATH', os.environ)
             self.assertNotIn('UNKNOWN', os.environ)
+
+    def test_empty_environment_variable_does_not_hide_the_env_file_key(self):
+        with tempfile.TemporaryDirectory() as folder, patch.dict(os.environ, {'GEMINI_API_KEY': ''}, clear=True):
+            root = Path(folder)
+            (root / '.env').write_text('GEMINI_API_KEY=' + KEY + '\n')
+            load_env(root)
+            self.assertEqual(os.environ['GEMINI_API_KEY'], KEY)
 
     def test_configuration_is_private_atomic_and_keeps_unrelated_settings(self):
         with tempfile.TemporaryDirectory() as folder:
