@@ -55,7 +55,7 @@ All authenticated operations use the `routing_session` cookie. Start with `GET /
 
 No CORS permission is configured. The browser frontend calls the API from the same origin. HTML paths are served publicly as a generic shell; user data and role actions are protected at API level. The UI redirects users away from screens outside their role.
 
-Student user objects include `student_profile` with `student_id`, `admission_year`, `academic_year` and `course`. Staff/admin receive null for this field. The student-only `/profile` page renders these fields together with the signed-in account name and email; it has no separate profile lookup or edit endpoint. Registration ignores client-supplied role, course or profile. Invalid student email/future admission year returns 400; case-normalized duplicate returns 409. Helpdesk/admin use pre-provisioned local accounts. Domain restriction does not verify mailbox ownership.
+Student user objects include `student_profile` with `student_id`, `admission_year`, `academic_year` and `course`. Staff/admin receive null for this field. The `/profile` page is available to every signed-in role. Students see these fields together with their account name, email and creation date; support and admin accounts see role details and workspace shortcuts. It has no separate profile lookup or edit endpoint. The session user includes `created_at` for the member-since field. Registration ignores client-supplied role, course or profile. Invalid student email/future admission year returns 400; case-normalized duplicate returns 409. Helpdesk/admin use pre-provisioned local accounts. Domain restriction does not verify mailbox ownership.
 
 ## Example request after login
 

@@ -1,0 +1,90 @@
+{
+  "status": "passed",
+  "checks": [
+    {
+      "name": "US10 list starts unfiltered",
+      "passed": true,
+      "detail": "Showing 5 of 5 requests"
+    },
+    {
+      "name": "Open requests card applies the Open filter",
+      "passed": true,
+      "detail": "Showing 4 of 5 requests"
+    },
+    {
+      "name": "Resolved card applies the Resolved filter",
+      "passed": true,
+      "detail": "Showing 1 of 5 requests"
+    },
+    {
+      "name": "Total card clears the filters",
+      "passed": true,
+      "detail": "Showing 5 of 5 requests"
+    },
+    {
+      "name": "Search finds the request by message text",
+      "passed": true,
+      "detail": "Showing 1 of 5 requests"
+    },
+    {
+      "name": "US11 student sees the staff message",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "US11 student reply appears in the thread",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "US12 profile shows student ID and academic year",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Clicking the Student ID row copies it",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Clicking the Academic year row copies it",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Profile Resolved card opens the filtered request list",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Queue Marked urgent card sets the priority filter",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Queue Awaiting review card sets the status filter",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Queue In this view card clears the filters",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Support profile Unread messages card opens the queue",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Admin profile Access card opens routing settings",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Profile has no horizontal overflow at 390x844",
+      "passed": true,
+      "detail": ""
+    }
+  ]
+}

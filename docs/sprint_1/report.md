@@ -20,7 +20,7 @@ Enable an authenticated student to submit a request, reach the relevant departme
 
 Authentication, request CRUD, schema setup, privacy controls, and a consistent interface are enabling tasks. Their effort is tracked in the task backlog and is not added to the supplied story estimates. Owners use the roles supplied in the workbook because personal team assignments were not provided.
 
-The workbook gives US1 a deadline of 15.11.2026 and US2 30.11.2026. These source dates are preserved. They do not define a single two-week sprint and are not presented as actual completion/defence dates. The course calendar and Moodle defence dates take precedence for submission scheduling.
+The team's deadline for Sprint 1 is 27.09.2026, the first sprint of a project that started in September 2026. The date is recorded in the product backlog and the revised workbook. It is a planning date and is not presented as an actual completion or defence date.
 
 ## Increment delivered
 

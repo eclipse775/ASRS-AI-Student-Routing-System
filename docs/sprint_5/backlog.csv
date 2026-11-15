@@ -1,0 +1,13 @@
+﻿Task ID,Sprint,Story,Task,Owner role,Estimated hours (planning assumption),Technical state,Evidence
+S5-T01,5,US10,"Implement search over reference, subject, message and department",Frontend Developer / UX Designer,,Done,static/app.js
+S5-T02,5,US10,"Combine status and department filters with clear button, count and empty state",Frontend Developer / UX Designer,,Done,static/app.js
+S5-T03,5,US10,Keep filters across the 15-second refresh and reset them on sign-out,Frontend Developer / UX Designer,,Done,static/app.js
+S5-T04,5,US11,"Implement message storage, owner/role checks, validation and retry-safe sending",Full-stack Developer,,Done,app/messaging.py; app/schema.sql; app/server.py
+S5-T05,5,US11,"Implement read-only on Resolved, unread counts, notifications and audit entry",Full-stack Developer,,Done,app/messaging.py; app/service.py
+S5-T06,5,US11,Build the message thread in the student and staff request dialogs,Full-stack Developer / UX Designer,,Done,static/app.js; static/style.css
+S5-T07,5,US12,Derive the profile from the student ID and return it in the session,Frontend Developer / UX Designer,,Done,app/university.py; app/server.py
+S5-T08,5,US12,Build the My profile page for all roles,Frontend Developer / UX Designer,,Done,static/app.js; static/style.css; static/theme.css
+S5-T09,5,US10-US12,"Verify messaging, profile derivation and the full backend suite",QA Tester,,Done,tests/test_messaging.py; tests/test_university.py
+S5-T10,5,US12,"Make summary cards and profile detail rows pressable (filters, navigation, copy)",Frontend Developer / UX Designer,,Done,static/app.js; static/theme.css
+S5-T11,5,US10-US12,Add the repeatable Sprint 5 browser check and capture evidence screenshots,QA Tester,,Done,scripts/sprint5_ui_check.py; docs/evidence/sprint5_ui_check.json; docs/evidence/sprint5/
+S5-T12,5,Management,"Prepare Sprint 5 report, roadmap and documentation alignment",Product Owner / Scrum Master,,Done,docs/sprint_5/report.md; docs/reports/Sprint_5_Report.pdf

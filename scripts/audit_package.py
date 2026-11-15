@@ -17,6 +17,8 @@ REQUIRED=['README.md','API_START_RU.md','run.py','start_windows.bat','start_mac_
  'docs/source_manifest.json','docs/sprint_1/report.md','docs/sprint_2/report.md',
  'docs/sprint_1/backlog.csv','docs/sprint_2/backlog.csv','docs/sprint_1/burndown.csv','docs/sprint_2/burndown.csv',
  'docs/reports/Sprint_1_Report.pdf','docs/reports/Sprint_2_Report.pdf',
+ 'docs/sprint_5/report.md','docs/sprint_5/backlog.csv','docs/sprint_5/burndown.csv','docs/reports/Sprint_5_Report.pdf',
+ 'scripts/sprint5_ui_check.py','docs/evidence/sprint5_ui_check.json','docs/evidence/sprint5/01_student_card_filter.png','docs/reports/Sprint_3_Report.pdf','docs/reports/Sprint_4_Report.pdf',
  'docs/evidence/verification.json','docs/evidence/model_evaluation.json','docs/evidence/test_results.txt',
  'docs/evidence/browser_checks.json',
  'docs/evidence/01_login.png','docs/evidence/02_student_portal.png','docs/evidence/03_notifications.png',
@@ -35,7 +37,7 @@ def main():
         p=ROOT/'docs/source'/row['file']
         if not p.is_file() or hashlib.sha256(p.read_bytes()).hexdigest()!=row['sha256']:errors.append('Source changed: '+row['file'])
     with (ROOT/'docs/product_backlog.csv').open(encoding='utf-8-sig',newline='') as f:stories=list(csv.DictReader(f))
-    if len(stories)!=10 or sum(int(s['story_estimation']) for s in stories)!=52:errors.append('Backlog source totals do not match.')
+    if len(stories)!=16 or sum(int(s['story_estimation']) for s in stories)!=75:errors.append('Backlog source totals do not match.')
     selected=[s for s in stories if int(s['Course Sprint'])<=2]
     if [int(s['#story']) for s in selected]!=[1,2,3,4,5]:errors.append('Sprint 1-2 story selection does not match the workbook.')
     for s in stories:
@@ -60,7 +62,7 @@ def main():
         if p.is_file() and not any(part in ['.git','__pycache__','instance'] for part in p.parts):
             if p.suffix in ['.py','.json','.js','.html','.css'] and p.stat().st_size==0 and p.name!='__init__.py':errors.append('Empty implementation file: '+str(p.relative_to(ROOT)))
     if errors:print('\n'.join(errors));raise SystemExit(1)
-    report={'status':'passed','required_files':len(REQUIRED),'source_files_verified':7,'source_story_points':52,
+    report={'status':'passed','required_files':len(REQUIRED),'source_files_verified':7,'source_story_points':75,
             'sprint_1_points':8,'sprint_2_points':15,'implemented_stories':['US1','US2','US3','US4','US5'],
             'limits':'This audit checks package/evidence consistency, not real teacher acceptance or institutional compliance.'}
     if '--save' in sys.argv:(ROOT/'docs/evidence/package_audit.json').write_text(json.dumps(report,indent=2)+'\n')

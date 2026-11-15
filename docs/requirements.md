@@ -21,14 +21,14 @@ The original 16-story and 10-story workbooks are preserved unchanged in `docs/so
 | FR09 | Support staff resolve only routed requests and can reopen a resolution | 2 |
 | FR10 | Derive admission year and estimated course from student ID and current academic year | 1 foundation |
 | FR11 / US6 | Detect urgent requests, bypass uncertain routing, and alert the responsible team | 3 |
-| FR12 / US7 | Detect English/Russian/Kazakh and preserve original text with optional staff translation | 4 |
-| FR13 / US8 | Collect one resolution rating and allow student reopening within 48 hours | 5 |
-| FR14 / US9 | Show date-filtered request, label-agreement, response-time, and feedback metrics | 5 |
-| FR15 / US10 | Search owned requests by reference or text and combine status and department filters | 6 |
-| FR16 / US11 | Provide an owner/support-only message thread in request details; close sending while resolved | 6 |
-| FR17 / US12 | Give authenticated students a dedicated panel showing account and derived academic profile details | 6 |
-| FR18 / US13 | Apply department response targets using business hours, weekdays, and holidays | 7 |
-| FR19 / US14 | Accept private PNG/JPG/PDF attachments with size and ownership checks | 7 |
+| FR12 / US7 | Detect English/Russian/Kazakh and preserve original text with optional staff translation | 3 |
+| FR13 / US8 | Collect one resolution rating and allow student reopening within 48 hours | 4 |
+| FR14 / US9 | Show date-filtered request, label-agreement, response-time, and feedback metrics | 4 |
+| FR15 / US10 | Search owned requests by reference or text and combine status and department filters | 5 |
+| FR16 / US11 | Provide an owner/support-only message thread in request details; close sending while resolved | 5 |
+| FR17 / US12 | Give authenticated students a dedicated panel showing account and derived academic profile details | 5 |
+| FR18 / US13 | Apply department response targets using business hours, weekdays, and holidays | 6 |
+| FR19 / US14 | Accept private PNG/JPG/PDF attachments with size and ownership checks | 6 |
 | FR20 / US15 | Keep a hash-chained append-only routing and request audit log with CSV export | 7 |
 | FR21 / US16 | Anonymize old request data and support administrator-approved deletion | 7 |
 

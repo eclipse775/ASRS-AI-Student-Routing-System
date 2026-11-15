@@ -14,11 +14,11 @@ This audit maps the supplied coursework guidance and the current 16-story source
 | US1-US5: classification, receipt, review, queue, and status | Implemented; earlier automated evidence exists | `app/service.py`, `app/server.py`, existing acceptance evidence in `testing.md` |
 | US6-US7: urgency and multilingual intake | Implemented | `app/urgency.py`, `app/language.py`, `app/ml.py`, `app/llm.py`; common local vocabulary works offline, Gemini translation requires configuration |
 | US8-US9: feedback, reopening, analytics | Implemented in the current delivery | `app/features.py`, `static/features.js`; latest acceptance paths are not yet run |
-| US10-US12: student request search/filters, request message threads, and student profile panel | Implemented in the current source; latest acceptance paths are not run | `static/app.js`, `static/style.css`, `app/messaging.py`, student-only `/profile`; admin UI has no correction/retraining panel |
+| US10-US12: student request search/filters, request message threads, and student profile panel | Implemented in the current source; backend tests pass (US11 messaging 19 tests) and the Sprint 5 browser check passed (17/17) | `static/app.js`, `static/style.css`, `app/messaging.py`, `/profile` (all roles); `scripts/sprint5_ui_check.py`; admin UI has no correction/retraining panel |
 | US13: SLA reminders | Implemented | Persistent scheduler, managed business calendar, and overdue queue/reminder views |
 | US14-US16: attachments, tamper-evident audit, retention/deletion | Implemented | Private file endpoint, append-only hash-chain audit, scheduled anonymization and admin-approved deletion |
 | Security, validation, and data ownership | Implemented; latest additions need fresh acceptance checks | Role/owner checks, bounded input, CSRF, parameterized SQL, immutable audit triggers, file signatures and size limits |
-| Testing evidence | Historical evidence is scoped clearly | `testing.md` records the earlier baseline and explicitly marks the new US8-US16 increment as not run |
+| Testing evidence | Historical evidence is scoped clearly | `testing.md` records the earlier baseline and the 15 November 2026 backend re-run (163 tests passed) and the Sprint 5 browser check (17/17 passed); browser checks for US8-US9 and US13-US16 are marked as not run |
 | Demo and final product | Included for local classroom use | `README.md`, `demo_guide.md`; no production deployment or external course submission is claimed |
 | Institutional privacy and retention approval | Pending institution | Retention default is 365 days; school policy, approved contacts, and real calendar must be supplied before real student use |
 
@@ -26,4 +26,4 @@ This audit maps the supplied coursework guidance and the current 16-story source
 
 The revised 16-story workbook is the current scope source. The original 16-story workbook and earlier 10-story workbook are retained unchanged for provenance. The readable backlog preserves source planning fields and records US10 search/filter and US12 profile-panel estimates, roles, and prerequisites; course sprint assignments follow `roadmap.md`.
 
-The current code covers all 16 revised user stories. Historical test results do not verify the latest feature increment: `testing.md` marks the US8-US16 paths as not run in this delivery. Live Gemini and optional SMTP behavior depend on credentials and were not exercised here. External team/course actions remain open until the team records them.
+The current code covers all 16 revised user stories. The 163-test backend suite passed on 15 November 2026, but the older browser evidence does not cover the latest feature increment: `testing.md` marks the browser checks for US8-US9 and US13-US16 as not run in this delivery. Live Gemini and optional SMTP behavior depend on credentials and were not exercised here. External team/course actions remain open until the team records them.

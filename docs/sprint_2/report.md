@@ -21,7 +21,7 @@ Keep uncertain requests in a visible human review workflow, let authenticated su
 | US4. Staff manual routing dashboard | 6 | Frontend Developer and UX Designer | Support account, US3 | Role restriction, filtering/sorting, reassignment tests |
 | US5. Request status tracking | 4 | Full-stack Developer | US1, request status model | Owner isolation, timestamp, resolution/status tests |
 
-The source deadlines are 15.12.2026, 22.12.2026, and 29.12.2026. They are preserved in the product backlog. Their span exceeds a single two-week sprint; course dates govern the actual lab schedule. A seven-sprint roadmap reconciles the source's four feature groups with the course's seven iterations.
+The team's deadline for Sprint 2 is 04.10.2026. It is recorded in the product backlog and the revised workbook as a planning date, not as an actual completion or defence date. A seven-sprint roadmap reconciles the source's four feature groups with the course's seven iterations.
 
 ## Increment delivered
 

@@ -47,13 +47,14 @@ The project implements all 16 stories. The original Sprint 1-2 demo above remain
 2. On **My requests**, search by request reference or a word from the subject/message. Combine a status and department filter, then choose **Clear filters**. The list refreshes without losing the filters.
 3. Click **Open request & messages** on a request card. The request details dialog contains the **Messages** thread. A reply can be sent while the request is open.
 4. Open **My profile** as the student and show the name, SDU email/ID, admission year, academic year, and estimated course. Explain that the course year is derived from the student ID, not verified against university enrollment records.
+   The summary cards on the student home, the profile and the support queue are buttons: on the student home and profile, **Total**, **Open** and **Resolved** open the request list with that filter applied; in the support queue, **In this view**, **Awaiting route review** and **Marked urgent** set the queue filters. Every row in **Account details** copies its value when pressed.
 5. Submit a clearly urgent safety/health request. Show the urgent queue alert. Optional email escalation requires SMTP settings and department contacts in **Service operations**.
 6. As support, open **Support queue** and choose **Details and messages** on a request. Exchange a message and change the request status. Attachments are added by the student from the same request details dialog and are limited to three files of 5 MB each.
 7. Resolve a student request, return as the student, submit one rating, and reopen within 48 hours. The request returns to its prior department.
 8. As admin, open **Analytics** and show the seeded five-student example: the IT Helpdesk row has five synthetic ratings (1–5) and an average of **3.0**. Then review request volume, response times, and agreement with saved staff labels. This agreement is an operational estimate, not a verified production accuracy score.
 9. In **Service operations**, set response targets, business hours, time zone, holidays, and retention period. Show due-soon/overdue filters and deletion requests. In **Audit**, search and export the hash-chained event log.
 
-The historical test results in `testing.md` describe an earlier baseline. Acceptance checks for the latest US8-US16 increment have not yet been run. The included model holdout is synthetic and does not establish accuracy on real university requests.
+The historical test results in `testing.md` describe an earlier baseline. The backend suite for the latest increment passed (163 tests, 15 November 2026); the Sprint 5 browser check (US10-US12) passed 17 of 17 checks, and browser acceptance checks for US8-US9 and US13-US16 have not yet been run. The included model holdout is synthetic and does not establish accuracy on real university requests.
 
 ## User actions
 

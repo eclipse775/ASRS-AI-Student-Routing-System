@@ -2,17 +2,17 @@
 
 All 16 stories in the revised workbook have an implementation in the project. The original workbook is preserved unchanged, and the revised workbook replaces the urgent-alert escalation story with a student profile panel. The sprint grouping below follows the course plan; it does not claim that team ceremonies, instructor acceptance, or a real-campus deployment occurred.
 
-| Course sprint | Stories | Implemented workflows |
-| --- | --- | --- |
-| 1 | US1-US2 | AI request classification and routing, human fallback, in-app receipt and notification history |
-| 2 | US3-US5 | Low-confidence review, support queue and reassignment, request status and owner checks |
-| 3 | US6 | Urgency detection, immediate support alert, missed-emergency escalation |
-| 4 | US7 | English/Russian/Kazakh language detection, offline topic vocabulary, optional Gemini translation |
-| 5 | US8-US9 | Resolution feedback, 48-hour reopen, date-filtered administration analytics |
-| 6 | US10-US12 | Student request search and filters, message threads, student profile page |
-| 7 | US13-US16 | Business-hours SLA and reminders, secure attachments, tamper-evident audit export, retention and deletion |
+| Course sprint | Deadline | Stories | Implemented workflows |
+| --- | --- | --- | --- |
+| 1 | 27.09.2026 | US1-US2 | AI request classification and routing, human fallback, in-app receipt and notification history |
+| 2 | 04.10.2026 | US3-US5 | Low-confidence review, support queue and reassignment, request status and owner checks |
+| 3 | 18.10.2026 | US6-US7 | Urgency detection, immediate support alert, missed-emergency escalation; English/Russian/Kazakh language detection, offline topic vocabulary, optional Gemini translation |
+| 4 | 01.11.2026 | US8-US9 | Resolution feedback, 48-hour reopen, date-filtered administration analytics |
+| 5 | 15.11.2026 | US10-US12 | Student request search and filters, message threads, student profile page |
+| 6 | 29.11.2026 | US13-US14 | Business-hours SLA and reminders, secure attachments |
+| 7 | 06.12.2026 | US15-US16 | Tamper-evident audit export, retention and deletion |
 
-Estimates, priority flags, stakeholders, source iterations, and source deadlines are retained where applicable in the revised workbook and readable `product_backlog.csv`. US12's effort and role were updated for the profile-page scope. Course sprint assignments group the stories into seven course sprints. Source deadlines are planning data, not evidence of completed course defences.
+Estimates, priority flags, stakeholders, iterations, and deadlines are retained in the revised workbook and the readable `product_backlog.csv`. The iteration and deadline columns were replaced with the team's own plan: the project started in September 2026, each story takes the number and deadline of its course sprint, and the plan finishes on 06.12.2026. US12's effort and role were updated for the profile-page scope. These are planning dates, not evidence of completed course defences. The original 16-story workbook is kept unchanged in `source/` and still shows its original dates.
 
 ## Delivery boundaries
 

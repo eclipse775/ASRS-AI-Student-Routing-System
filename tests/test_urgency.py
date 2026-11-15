@@ -134,7 +134,9 @@ class UrgentRequestTests(unittest.TestCase):
         self.assertEqual(data["request"]["priority"], "urgent")
         alert = self.support.call("GET", "/api/staff/alerts")[1]["alerts"][0]
         self.assertEqual((alert["kind"], alert["request_id"]), ("escalation", r["id"]))
-        self.assertIn("very unwell", alert["reason"])
+        # The alert reason is fixed text; the student's free-text note is deliberately not copied into it.
+        self.assertEqual(alert["reason"], "Missed emergency reported by student.")
+        self.assertNotIn("very unwell", alert["reason"])
         # repeating while the alert is open does not create duplicates
         again = self.student.call("POST", f"/api/requests/{r['id']}/emergency", {"version": data["request"]["version"]})
         self.assertEqual(again[0], 200)

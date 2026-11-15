@@ -42,9 +42,10 @@
   },
   {
     "file": "AI_Student_Routing_16_User_Stories_Revised.xlsx",
-    "sha256": "4db00f07e9bf6e50ac7ee4912f416ae26891cb4a38d07b001d1f86682323a892",
+    "sha256": "796346c253fb8e3af4d4e8a62103bbaf342e132800fa0ffb9ee9eb2c656288f4",
     "copied_unchanged": false,
     "derived_from": "AI_Student_Routing_16_User_Stories.xlsx",
-    "scope": "revised current 16-story scope; US12 is the student profile panel"
+    "scope": "revised current 16-story scope; US12 is the student profile panel",
+    "note": "Source Iteration and Source Deadline replaced with the team's sprint numbers and sprint deadlines (15 November 2026 update)"
   }
 ]

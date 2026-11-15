@@ -172,7 +172,7 @@
   },
   {
     "id": "US7",
-    "sprint": 4,
+    "sprint": 3,
     "story": "US7",
     "title": "Multi-language Request Handling",
     "owner": "AI/Backend Developer & Localization Specialist",
@@ -181,7 +181,7 @@
   },
   {
     "id": "US8",
-    "sprint": 5,
+    "sprint": 4,
     "story": "US8",
     "title": "Student Feedback on Resolution",
     "owner": "Frontend Developer",
@@ -190,7 +190,7 @@
   },
   {
     "id": "US9",
-    "sprint": 5,
+    "sprint": 4,
     "story": "US9",
     "title": "Admin Analytics Dashboard",
     "owner": "Data Analyst & Backend Developer",
@@ -199,7 +199,7 @@
   },
   {
     "id": "US10",
-    "sprint": 6,
+    "sprint": 5,
     "story": "US10",
     "title": "Student Request Search & Filters",
     "owner": "Frontend Developer & UX Designer",
@@ -226,7 +226,7 @@
   },
   {
     "id": "US11",
-    "sprint": 6,
+    "sprint": 5,
     "story": "US11",
     "title": "Student–Staff Messaging on a Request",
     "owner": "Full-stack Developer & UX Designer",
@@ -235,7 +235,7 @@
   },
   {
     "id": "US12",
-    "sprint": 6,
+    "sprint": 5,
     "story": "US12",
     "title": "Student Profile Panel",
     "owner": "Frontend Developer & UX Designer",
@@ -243,8 +243,17 @@
     "evidence": "static/app.js; static/style.css; app/server.py"
   },
   {
+    "id": "REVIEW-03",
+    "sprint": 5,
+    "story": "Review",
+    "title": "Record actual Sprint 5 demo feedback and accepted stories",
+    "owner": "Team / Product Owner",
+    "status": "Review",
+    "evidence": "Human course action; no completion claimed"
+  },
+  {
     "id": "US13",
-    "sprint": 7,
+    "sprint": 6,
     "story": "US13",
     "title": "SLA Tracking & Overdue Request Reminders",
     "owner": "Backend Developer & Frontend Developer",
@@ -253,7 +262,7 @@
   },
   {
     "id": "US14",
-    "sprint": 7,
+    "sprint": 6,
     "story": "US14",
     "title": "Request Attachments",
     "owner": "Full-stack Developer",

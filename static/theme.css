@@ -337,3 +337,18 @@ html[data-theme="dark"] .feature-tab:hover{color:var(--ink)}
 html[data-theme="dark"] .profile-grid>div{background:#111c19}
 .feature-tab{transition:color .2s,border-color .25s}
 .content.enter .feature-metric{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+
+/* Pressable cards and rows (profile, student home, support queue) */
+.stat-btn{display:block;width:100%;margin:0;font:inherit;color:inherit;text-align:left;text-decoration:none;cursor:pointer;-webkit-appearance:none;appearance:none}
+.stat-btn:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+.stat-btn:active{transform:translateY(-1px) scale(.99)}
+.stat-btn.done{border-color:var(--green)}
+.detail-row{position:relative}
+.dr-copy{margin-left:auto;display:grid;place-items:center;flex:none;width:32px;height:32px;padding:0;border:1px solid var(--line);border-radius:9px;background:var(--surface-2);color:var(--muted);cursor:pointer;transition:border-color .25s,background .25s,color .25s}
+.dr-copy::after{content:"";position:absolute;inset:0;border-radius:9px}
+.dr-copy .ic{width:15px;height:15px}
+.detail-row:hover .dr-copy,.dr-copy:focus-visible,.dr-copy.done{border-color:var(--green);color:var(--green);background:var(--green-light)}
+.dr-copy:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+/* no transform on .dr-copy itself: a transform would shrink its click overlay */
+.detail-row:active .dr-copy .ic{transform:scale(.8)}
+html[data-theme="dark"] .detail-row:hover .dr-copy,html[data-theme="dark"] .dr-copy.done{background:#17352a}
