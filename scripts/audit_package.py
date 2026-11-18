@@ -18,7 +18,7 @@ REQUIRED=['README.md','API_START_RU.md','run.py','start_windows.bat','start_mac_
  'docs/sprint_1/backlog.csv','docs/sprint_2/backlog.csv','docs/sprint_1/burndown.csv','docs/sprint_2/burndown.csv',
  'docs/reports/Sprint_1_Report.pdf','docs/reports/Sprint_2_Report.pdf',
  'docs/sprint_5/report.md','docs/sprint_5/backlog.csv','docs/sprint_5/burndown.csv','docs/reports/Sprint_5_Report.pdf',
- 'scripts/sprint5_ui_check.py','docs/evidence/sprint5_ui_check.json','docs/evidence/sprint5/01_student_card_filter.png','docs/reports/Sprint_3_Report.pdf','docs/reports/Sprint_4_Report.pdf',
+ 'scripts/sprint5_ui_check.py','scripts/sprint6_7_ui_check.py','scripts/feedback_analytics_ui_check.py','tests/test_feedback_analytics.py','docs/evidence/feedback_analytics_ui_check.json','tests/test_sprint6_7.py','docs/sprint_6/report.md','docs/sprint_6/backlog.csv','docs/sprint_6/burndown.csv','docs/sprint_7/report.md','docs/sprint_7/backlog.csv','docs/sprint_7/burndown.csv','docs/reports/Sprint_6_Report.pdf','docs/reports/Sprint_7_Report.pdf','docs/evidence/sprint6_7_ui_check.json','docs/evidence/sprint5_ui_check.json','docs/evidence/sprint5/01_student_card_filter.png','docs/reports/Sprint_3_Report.pdf','docs/reports/Sprint_4_Report.pdf',
  'docs/evidence/verification.json','docs/evidence/model_evaluation.json','docs/evidence/test_results.txt',
  'docs/evidence/browser_checks.json',
  'docs/evidence/01_login.png','docs/evidence/02_student_portal.png','docs/evidence/03_notifications.png',

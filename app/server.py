@@ -17,7 +17,7 @@ from app.audit import append_audit
 from app.attachments import add_attachments, download_attachment, list_attachments
 from app.database import connection, initialize, utc_now
 from app.features import (analytics, export_audit_csv, get_on_call, get_sla_settings, pending_deletions,
-                          search_audit, submit_feedback, get_feedback, student_reopen,
+                          search_audit, staff_feedback, submit_feedback, get_feedback, student_reopen,
                           update_on_call, update_retention, update_sla_settings)
 from app.llm import build_classifier
 from app.messaging import (MESSAGE_COUNT, UNREAD_FOR_STUDENT, UNREAD_FOR_SUPPORT, list_messages, mark_read,
@@ -175,7 +175,7 @@ class Application:
 
     @staticmethod
     def static_file(path):
-        if path in ("/", "/staff", "/notifications", "/profile", "/settings", "/models", "/analytics", "/operations", "/audit"):
+        if path in ("/", "/staff", "/notifications", "/profile", "/settings", "/models", "/analytics", "/operations", "/audit", "/feedback"):
             return ROOT / "static" / "index.html"
         candidate = (ROOT / "static" / path.lstrip("/")).resolve()
         if not candidate.is_relative_to((ROOT / "static").resolve()) or not candidate.is_file():
@@ -318,12 +318,16 @@ class Application:
                 params.append(user["id"])
             clause = " WHERE " + " AND ".join(where) if where else ""
             rows = db.execute("SELECT r.*,d.name department_name,d.code department_code,CASE WHEN r.anonymized_at IS NULL THEN u.name ELSE 'Anonymized student' END student_name," +
-                              UNREAD_FOR_SUPPORT + "," + MESSAGE_COUNT + """
+                              UNREAD_FOR_SUPPORT + "," + MESSAGE_COUNT +
+                              ",(SELECT rating FROM request_feedback f WHERE f.request_id=r.id) feedback_rating" + """
                                 FROM requests r LEFT JOIN departments d ON d.id=r.department_id
                                 JOIN users u ON u.id=r.student_id""" + clause + " ORDER BY (r.sla_due_at IS NOT NULL AND r.sla_due_at<=?) DESC,(r.priority='urgent') DESC,r.created_at ASC,r.id ASC", params + [utc_now()]).fetchall()
             unread_staff = db.execute("SELECT COUNT(*) FROM staff_notifications WHERE user_id=? AND read_at IS NULL", (user["id"],)).fetchone()[0]
             return {"requests": [serialize(r) for r in rows], "unread_messages": unread_total_for_support(db),
                     "unread_staff_notifications": unread_staff}, 200
+        if path == "/api/staff/feedback" and method == "GET":
+            self.require_sprint2()
+            return staff_feedback(db, user, parse_qs(env.get("QUERY_STRING", ""))), 200
         if path == "/api/staff/alerts" and method == "GET":
             self.require_sprint2()
             return {"alerts": list_alerts(db, user)}, 200

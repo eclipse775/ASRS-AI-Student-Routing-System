@@ -22,6 +22,48 @@ AUDIT_ACTIONS = {"request_created", "request_edited", "request_routed", "request
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 
+def staff_feedback(db, user, query):
+    """Support-only list of student ratings and comments, newest first, with a summary."""
+    require_role(user, "support")
+    raw_limit, raw_offset = query.get("limit", ["50"])[0], query.get("offset", ["0"])[0]
+    if not raw_limit.isdigit() or not raw_offset.isdigit():
+        raise APIError(400, "Pagination values must be numbers.")
+    limit, offset = min(200, max(1, int(raw_limit))), min(1000000, int(raw_offset))
+    clauses, params = [], []
+    department = query.get("department", [""])[0]
+    if department:
+        if not db.execute("SELECT 1 FROM departments WHERE code=?", (department,)).fetchone():
+            raise APIError(400, "Choose a valid department.")
+        clauses.append("d.code=?")
+        params.append(department)
+    rating = query.get("rating", [""])[0]
+    if rating == "low":
+        clauses.append("f.rating<=2")
+    elif rating:
+        if rating not in ("1", "2", "3", "4", "5"):
+            raise APIError(400, "Choose a rating from 1 to 5, or low.")
+        clauses.append("f.rating=?")
+        params.append(int(rating))
+    where = (" WHERE " + " AND ".join(clauses)) if clauses else ""
+    rows = db.execute("""SELECT f.id,f.request_id,f.rating,f.comment,f.created_at,r.title,r.status,
+                         d.name department,d.code department_code,
+                         CASE WHEN r.anonymized_at IS NULL THEN u.name ELSE 'Anonymized student' END student_name
+                         FROM request_feedback f JOIN requests r ON r.id=f.request_id
+                         JOIN users u ON u.id=r.student_id LEFT JOIN departments d ON d.id=f.department_id""" + where +
+                      " ORDER BY f.created_at DESC,f.id DESC LIMIT ? OFFSET ?", (*params, limit + 1, offset)).fetchall()
+    entries = [dict(r) for r in rows[:limit]]
+    for entry in entries:
+        entry["reference"] = f"REQ-{entry['request_id']:05d}"
+    totals = db.execute("""SELECT COUNT(*) count,ROUND(AVG(rating),2) average,
+                           COALESCE(SUM(CASE WHEN rating<=2 THEN 1 ELSE 0 END),0) low_count,
+                           COALESCE(SUM(CASE WHEN comment!='' THEN 1 ELSE 0 END),0) with_comment FROM request_feedback""").fetchone()
+    by_department = [dict(r) for r in db.execute("""SELECT COALESCE(d.name,'Staff review') department,COUNT(*) count,
+                         ROUND(AVG(f.rating),2) average FROM request_feedback f
+                         LEFT JOIN departments d ON d.id=f.department_id GROUP BY d.name ORDER BY d.name""")]
+    return {"summary": dict(totals), "by_department": by_department, "feedback": entries,
+            "has_more": len(rows) > limit, "next_offset": offset + limit if len(rows) > limit else None}
+
+
 def submit_feedback(db, user, row, data):
     require_role(user, "student")
     if row["student_id"] != user["id"]:
@@ -44,8 +86,8 @@ def submit_feedback(db, user, row, data):
 
 
 def get_feedback(db, user, row):
-    require_role(user, "student")
-    if row["student_id"] != user["id"]:
+    require_role(user, "student", "support")
+    if user["role"] == "student" and row["student_id"] != user["id"]:
         raise APIError(404, "Request not found.")
     result = db.execute("SELECT rating,comment,created_at FROM request_feedback WHERE request_id=?", (row["id"],)).fetchone()
     return dict(result) if result else None
@@ -103,9 +145,7 @@ def _parse_date(value, label):
 def _analytics_range(db, query):
     opening, closing, zone, holidays = calendar(db)
     today = datetime.now(timezone.utc).astimezone(zone).date()
-    through = today - timedelta(days=1)
-    while through.weekday() >= 5 or through.isoformat() in holidays:
-        through -= timedelta(days=1)
+    through = today  # live figures: requests and ratings created today are included
     start = _parse_date(query.get("from", [""])[0], "start date") if query.get("from") else through - timedelta(days=29)
     end = _parse_date(query.get("to", [""])[0], "end date") if query.get("to") else through
     end = min(end, through)
@@ -335,7 +375,7 @@ def _audit_rows(db, query, cap, offset=0):
     if start and end and start > end:
         raise APIError(400, "The start date must be on or before the end date.")
     where = " WHERE " + " AND ".join(clauses) if clauses else ""
-    rows = db.execute("""SELECT a.*,COALESCE(u.name,'Former or removed user') actor_name FROM audit_log a
+    rows = db.execute("""SELECT a.*,COALESCE(u.name,CASE WHEN a.actor_role='system' THEN 'System (automatic)' ELSE 'Former or removed user' END) actor_name FROM audit_log a
                          LEFT JOIN users u ON u.id=a.actor_id""" + where + " ORDER BY a.id DESC LIMIT ? OFFSET ?",
                       params + [cap, offset]).fetchall()
     return rows

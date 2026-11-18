@@ -35,14 +35,15 @@ All authenticated operations use the `routing_session` cookie. Start with `GET /
 | POST | /api/admin/retraining/run | Admin, Sprint 2 | Optional local-model maintenance run (202); 409 if one is running |
 | POST | /api/admin/models/{version}/activate | Admin, Sprint 2 | Optional local-model maintenance API: restore an archived version (rejected versions cannot be restored) |
 | POST | /api/requests/{id}/feedback | Owner | US8: rating 1-5 and optional comment, only after resolution, once per request |
-| GET | /api/requests/{id}/feedback | Owner | US8: own feedback record, if submitted |
+| GET | /api/requests/{id}/feedback | Owner or support | US8: the feedback record, if submitted (a student reads only their own; administrators are refused) |
+| GET | /api/staff/feedback?rating=&department=&limit=&offset= | Support | US8: student ratings and comments, newest first, with a summary and a per-department average; `rating` is 1-5 or `low` (1-2) |
 | POST | /api/requests/{id}/reopen | Owner | US8: reopen a resolved request within 48 hours; keeps the same department |
 | POST | /api/requests/{id}/attachments | Owner | US14: `files` array of `{name,type,data}`; Base64 data URI; max 3 files total, PNG/JPG/PDF, 5 MB each |
 | GET | /api/requests/{id}/attachments | Owner/support | US14: private metadata list |
 | GET | /api/attachments/{attachment_id} | Owner/support | US14: private attachment download; admin and other students are denied |
 | GET | /api/staff/notifications | Support | US13: own overdue reminders and reopen notifications |
 | POST | /api/staff/notifications/{id}/read | Support | Mark a staff reminder read |
-| GET | /api/admin/analytics?from=YYYY-MM-DD&to=YYYY-MM-DD | Admin | US9: volume, categories, labeled-example agreement, first response times, feedback; data ends on the previous full business day |
+| GET | /api/admin/analytics?from=YYYY-MM-DD&to=YYYY-MM-DD | Admin | US9: volume, categories, labeled-example agreement, first response times, feedback; figures are live and include requests and ratings created today (the range ends today) |
 | GET / PUT | /api/admin/sla | Admin | US13: per-department response hours, business opening/closing, time zone, school holidays |
 | GET / PUT | /api/admin/on-call | Admin | Optional urgent-alert email escalation: replace the department contact roster; returns SMTP configuration status |
 | GET / PUT | /api/admin/retention | Admin | US16: retention days and pending deletion requests; update the retention period |

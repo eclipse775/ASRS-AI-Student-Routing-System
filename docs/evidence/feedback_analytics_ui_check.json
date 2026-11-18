@@ -1,0 +1,50 @@
+{
+  "status": "passed",
+  "checks": [
+    {
+      "name": "Analytics counts the two requests created a moment ago",
+      "passed": true,
+      "detail": "5 -> 7"
+    },
+    {
+      "name": "Analytics says the figures are live through today",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Support navigation has a Student feedback page",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Feedback page shows both ratings with their comments",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Feedback page counts the two new ratings and shows the average and low ratings",
+      "passed": true,
+      "detail": "5 -> 7"
+    },
+    {
+      "name": "Low-rating filter keeps only the 2-star feedback",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Open request shows the student's feedback inside the request details",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Resolved card in the queue carries the star rating",
+      "passed": true,
+      "detail": "['\u2605 5/5', '\u2605 4/5', '\u2605 3/5', '\u2605 2/5', '\u2605 1/5', '\u2605 5/5', '\u2605 2/5']"
+    },
+    {
+      "name": "Analytics shows the new ratings and no comment text",
+      "passed": true,
+      "detail": ""
+    }
+  ]
+}

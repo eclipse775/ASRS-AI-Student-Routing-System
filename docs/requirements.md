@@ -60,7 +60,7 @@ The original 16-story and 10-story workbooks are preserved unchanged in `docs/so
 
 The US1-US5 tests above are in `tests/test_acceptance.py`. External AI provider behavior is tested in `tests/test_gemini.py`, including failure review, key privacy, output validation, delayed-session invalidation and concurrent versions. Real-provider accuracy/latency is pending a configured API account.
 
-Stories US8-US16 are implemented in the API and browser interface. Feedback is a single rating per request; reopening is limited to 48 hours. Analytics uses labeled-example agreement and only includes data through the previous full business day. The student profile page shows server-derived account and academic details. Optional urgent email escalation requires configured SMTP and contacts. SLA calculations use the administrator-managed time zone, 09:00-17:00 defaults, weekdays, and the holiday table. Attachments use request-owner/support authorization and fixed MIME/size limits. Audit records are append-only in the application and verified through a SHA-256 hash chain. Retention defaults to 365 days until the administrator sets the institution's approved period.
+Stories US8-US16 are implemented in the API and browser interface. Feedback is a single rating per request; reopening is limited to 48 hours. Analytics uses labeled-example agreement and is live: it includes requests and ratings created today. Support staff read the students' ratings and comments on the Student feedback page and in the request details; administrators see only averages. The student profile page shows server-derived account and academic details. Optional urgent email escalation requires configured SMTP and contacts. SLA calculations use the administrator-managed time zone, 09:00-17:00 defaults, weekdays, and the holiday table. Attachments use request-owner/support authorization and fixed MIME/size limits. Audit records are append-only in the application and verified through a SHA-256 hash chain. Retention defaults to 365 days until the administrator sets the institution's approved period.
 
 | Story | Acceptance behavior implemented |
 | --- | --- |
@@ -76,7 +76,7 @@ Stories US8-US16 are implemented in the API and browser interface. Feedback is a
 
 SDU-specific acceptance is in `tests/test_university.py`: only nine ASCII digits at the exact student domain can register; `240103030@sdu.edu.kz` is Year 3 in 2026-2027; January preserves the academic year; future cohorts and forged roles/course values are rejected; helpdesk cannot sign up publicly but can sign in when provisioned. Browser checks exercise the profile page and registration preview. See `SDU_REGISTRATION.md` for the academic-calendar assumption, demo migration and mailbox-ownership boundary.
 
-Browser evidence is marked by its actual execution state in `docs/evidence/verification.json`; it is not assumed to have passed.
+US13-US16 acceptance tests are in `tests/test_sprint6_7.py` (33 tests). Browser evidence is marked by its actual execution state in `docs/evidence/verification.json`; it is not assumed to have passed.
 
 ## Non-functional requirements
 

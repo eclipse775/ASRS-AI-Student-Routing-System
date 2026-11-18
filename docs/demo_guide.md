@@ -54,7 +54,9 @@ The project implements all 16 stories. The original Sprint 1-2 demo above remain
 8. As admin, open **Analytics** and show the seeded five-student example: the IT Helpdesk row has five synthetic ratings (1–5) and an average of **3.0**. Then review request volume, response times, and agreement with saved staff labels. This agreement is an operational estimate, not a verified production accuracy score.
 9. In **Service operations**, set response targets, business hours, time zone, holidays, and retention period. Show due-soon/overdue filters and deletion requests. In **Audit**, search and export the hash-chained event log.
 
-The historical test results in `testing.md` describe an earlier baseline. The backend suite for the latest increment passed (163 tests, 15 November 2026); the Sprint 5 browser check (US10-US12) passed 17 of 17 checks, and browser acceptance checks for US8-US9 and US13-US16 have not yet been run. The included model holdout is synthetic and does not establish accuracy on real university requests.
+Support staff can read student feedback: open **Student feedback** in the support menu (ratings, comments, low-rating filter, per-department averages), or open a resolved request. The administrator's **Support analytics** page is live and counts requests created today.
+
+The historical test results in `testing.md` describe an earlier baseline. The backend suite for the latest increment passed (206 tests, 16 November 2026); the Sprint 5 browser check (US10-US12) passed 17 of 17 checks, the Sprint 6-7 browser check (US13-US16) passed 16 of 16, and browser acceptance checks for US8-US9 have not yet been run. The included model holdout is synthetic and does not establish accuracy on real university requests.
 
 ## User actions
 
